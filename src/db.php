@@ -44,11 +44,8 @@ class Database
 		}
 	}
 
-	public function query()
+	public function query($query, $args = null)
 	{
-		$args = func_get_args();
-		$query = array_shift($args);
-
 		// If the query hasn't already been compiled/prepared
 		if ($query->statement === null)
 		{
@@ -56,17 +53,8 @@ class Database
 			$query->statement = $this->pdo->prepare($query->sql);
 		}
 
-		// Execute the actual statement
-		if (empty($args))
-			$result = $query->statement->execute();
-		else
-		{
-			$args = array_combine($this->generate_keys(count($args)), $args);
-			$result = $query->statement->execute($args);
-		}
-
-		// Check if an error occured
-		if ($result === false)
+		// Execute the actual statement, and check if an error occured
+		if ($query->statement->execute($args) === false)
 		{
 			$error = $query->statement->errorInfo();
 			throw new Exception($error[2]);
@@ -78,16 +66,6 @@ class Database
 
 		// Otherwise return the number of affected rows
 		return $query->statement->rowCount();
-	}
-
-	private function generate_keys($num_keys)
-	{
-		$keys = array();
-
-		for ($i = 1;$i <= $num_keys;$i++)
-			$keys[] = ':'.$i;
-
-		return $keys;
 	}
 
 	public function insert_id()

@@ -18,7 +18,8 @@ $query = new SelectQuery();
 $query->fields = array('1 AS one', '(1+1) AS two', 'current_time AS time', ':1 AS little_bobby_tables');
 
 // Execute the query, passing some rubbish as a parameter
-$result = $db->query($query, 'Robert\'); DROP TABLE Students;--');
+$params = array(':1' => 'Robert\'); DROP TABLE Students;--');
+$result = $db->query($query, $params);
 
 // Display our results
 print_r($result);
