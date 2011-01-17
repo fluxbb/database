@@ -15,7 +15,7 @@ $db->start_transaction();
 
 // Select some rubbish as a test...
 $query = new SelectQuery();
-$query->fields = array('1 AS one', '(1+1) AS two', 'current_time AS time', '? AS little_bobby_tables');
+$query->fields = array('1 AS one', '(1+1) AS two', 'current_time AS time', ':1 AS little_bobby_tables');
 
 // Execute the query, passing some rubbish as a parameter
 $result = $db->query($query, 'Robert\'); DROP TABLE Students;--');

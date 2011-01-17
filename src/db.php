@@ -57,10 +57,16 @@ class Database
 		}
 
 		// Execute the actual statement
-		$result = empty($args) ? $query->statement->execute() : $query->statement->execute($args);
+		if (empty($args))
+			$result = $query->statement->execute();
+		else
+		{
+			$args = array_combine($this->generate_keys(count($args)), $args);
+			$result = $query->statement->execute($args);
+		}
 
 		// Check if an error occured
-		if ($query->statement->execute($args) === false)
+		if ($result === false)
 		{
 			$error = $query->statement->errorInfo();
 			throw new Exception($error[2]);
@@ -72,6 +78,16 @@ class Database
 
 		// Otherwise return the number of affected rows
 		return $query->statement->rowCount();
+	}
+
+	private function generate_keys($num_keys)
+	{
+		$keys = array();
+
+		for ($i = 1;$i <= $num_keys;$i++)
+			$keys[] = ':'.$i;
+
+		return $keys;
 	}
 
 	public function insert_id()
