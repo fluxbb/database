@@ -7,6 +7,9 @@
 
 abstract class DatabaseQuery
 {
+	public $sql = null;
+	public $statement = null;
+
 	public $table = null;
 }
 

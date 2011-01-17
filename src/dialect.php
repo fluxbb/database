@@ -33,13 +33,13 @@ class SQLDialect
 
 	protected function select($query)
 	{
-		if ($query->table === null)
-			throw new Exception('A SELECT query must have a table specified.');
-
 		if (empty($query->fields))
 			throw new Exception('A SELECT query must select at least 1 field.');
 
-		$sql = 'SELECT '.implode(', ', $query->fields).' FROM '.$query->table;
+		$sql = 'SELECT '.implode(', ', $query->fields);
+
+		if (!empty($query->table))
+			$sql .= ' FROM '.$query->table;
 
 		// TODO: joins
 		// TODO: where
@@ -59,7 +59,7 @@ class SQLDialect
 
 	protected function insert($query)
 	{
-		if ($query->table === null)
+		if (empty($query->table))
 			throw new Exception('An INSERT query must have a table specified.');
 
 		if (empty($query->values))
@@ -70,7 +70,7 @@ class SQLDialect
 
 	protected function update($query)
 	{
-		if ($query->table === null)
+		if (empty($query->table))
 			throw new Exception('An UPDATE query must have a table specified.');
 
 		if (empty($query->values))
@@ -94,7 +94,7 @@ class SQLDialect
 
 	protected function delete($query)
 	{
-		if ($query->table === null)
+		if (empty($query->table))
 			throw new Exception('A DELETE query must have a table specified.');
 
 		$sql = 'DELETE FROM '.$query->table;
