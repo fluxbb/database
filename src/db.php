@@ -46,12 +46,13 @@ class Database
 
 	public function query($query, $args = null)
 	{
-		// If the query hasn't already been compiled/prepared
-		if ($query->statement === null)
-		{
+		// If the query hasn't already been compiled
+		if ($query->sql === null)
 			$query->sql = $this->dialect->compile($query);
+
+		// If the statement hasn't already been prepared
+		if ($query->statement === null)
 			$query->statement = $this->pdo->prepare($query->sql);
-		}
 
 		// Execute the actual statement, and check if an error occured
 		if ($query->statement->execute($args) === false)
