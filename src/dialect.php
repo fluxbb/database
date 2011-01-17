@@ -16,16 +16,16 @@ class SQLDialect
 
 	public function compile($query)
 	{
-		if (is_a($query, 'SelectQuery'))
+		if ($query instanceof SelectQuery)
 			return $this->select($query);
 
-		if (is_a($query, 'InsertQuery'))
+		if ($query instanceof InsertQuery)
 			return $this->insert($query);
 
-		if (is_a($query, 'UpdateQuery'))
+		if ($query instanceof UpdateQuery)
 			return $this->update($query);
 
-		if (is_a($query, 'DeleteQuery'))
+		if ($query instanceof DeleteQuery)
 			return $this->delete($query);
 
 		throw new Exception('Unsupported query type: '.get_class($query));
