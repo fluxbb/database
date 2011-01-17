@@ -1,7 +1,5 @@
 <?php
 
-header('Content-type: text/plain');
-
 define('PHPDB_ROOT', dirname(__FILE__).'/src/');
 require PHPDB_ROOT.'db.php';
 
