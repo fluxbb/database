@@ -13,8 +13,8 @@ require PHPDB_ROOT.'dialect.php';
 
 class Database
 {
-	private $pdo;
-	private $dialect;
+	protected $pdo;
+	protected $dialect;
 
 	public function __construct($dsn, $args = array(), $dialect = null)
 	{
