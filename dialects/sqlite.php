@@ -9,6 +9,8 @@
 
 class SQLDialect_SQLite extends SQLDialect
 {
+	const SET_NAMES = null;
+
 	protected function limit_offset($limit, $offset)
 	{
 		$sql = '';

@@ -7,6 +7,8 @@
 
 class SQLDialect
 {
+	const SET_NAMES = 'SET NAMES %s';
+
 	protected $prefix;
 
 	public function __construct($prefix)

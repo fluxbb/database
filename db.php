@@ -13,6 +13,8 @@ require PHPDB_ROOT.'dialect.php';
 
 class Database
 {
+	const DEFAULT_CHARSET = 'utf8';
+
 	protected $pdo;
 	protected $dialect;
 	protected $debug;
@@ -34,7 +36,10 @@ class Database
 
 		// We are just using the default dialect
 		if ($dialect === null)
+		{
 			$this->dialect = new SQLDialect($prefix);
+			$set_names_sql = SQLDialect::SET_NAMES;
+		}
 		else
 		{
 			if (!class_exists('SQLDialect_'.$dialect))
@@ -47,6 +52,14 @@ class Database
 
 			// Instantiate the dialect
 			$this->dialect = $class->newInstance($prefix);
+			$set_names_sql = $class->getConstant('SET_NAMES');
+		}
+
+		// If we need to set names for this database, do so
+		if (!empty($set_names_sql))
+		{
+			$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
+			$this->pdo->exec(sprintf($set_names_sql, $this->pdo->quote($charset)));
 		}
 	}
 
