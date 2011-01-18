@@ -39,7 +39,7 @@ class SQLDialect
 		$sql = 'SELECT '.implode(', ', $query->fields);
 
 		if (!empty($query->table))
-			$sql .= ' FROM '.$query->table;
+			$sql .= ' FROM '.$this->prefix.$query->table;
 
 		// TODO: joins
 		// TODO: where
@@ -65,7 +65,7 @@ class SQLDialect
 		if (empty($query->values))
 			throw new Exception('An INSERT query must contain at least 1 value.');
 
-		return 'INSERT INTO '.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+		return 'INSERT INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
 	protected function update($query)
@@ -80,7 +80,7 @@ class SQLDialect
 		foreach ($query->values as $key => $value)
 			$updates[] = $key.'='.$value;
 
-		$sql = 'UPDATE '.$query->table.' SET '.implode(', ', $updates);
+		$sql = 'UPDATE '.$this->prefix.$query->table.' SET '.implode(', ', $updates);
 
 		// TODO: where
 
@@ -97,7 +97,7 @@ class SQLDialect
 		if (empty($query->table))
 			throw new Exception('A DELETE query must have a table specified.');
 
-		$sql = 'DELETE FROM '.$query->table;
+		$sql = 'DELETE FROM '.$this->prefix.$query->table;
 
 		// TODO: where
 
