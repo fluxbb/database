@@ -7,7 +7,7 @@ require PHPDB_ROOT.'db.php';
 header('Content-type: text/plain');
 
 // Open a new database - sqlite in memory will do - using the sqlite dialect obviously
-$db = new Database('sqlite::memory:', array(), 'sqlite');
+$db = new Database('sqlite::memory:', array('debug' => true), 'sqlite');
 
 $db->start_transaction();
 
@@ -26,6 +26,10 @@ print_r($result);
 unset ($result);
 
 $db->commit_transaction();
+
+// Print some debug information
+$debug = $db->fetch_debug_queries();
+print_r($debug);
 
 // Close the database
 unset ($db);

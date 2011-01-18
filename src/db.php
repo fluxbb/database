@@ -15,6 +15,8 @@ class Database
 {
 	protected $pdo;
 	protected $dialect;
+	protected $debug;
+	protected $queries;
 
 	public function __construct($dsn, $args = array(), $dialect = null)
 	{
@@ -22,6 +24,10 @@ class Database
 		$password = isset($args['password']) ? $args['password'] : '';
 		$options = isset($args['options']) ? $args['options'] : array();
 		$prefix = isset($args['prefix']) ? $args['prefix'] : '';
+
+		// Check if we should store debug information
+		$this->debug = isset($args['debug']) ? $args['debug'] : false;
+		$this->queries = array();
 
 		$this->pdo = new PDO($dsn, $username, $password, $options);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -46,6 +52,10 @@ class Database
 
 	public function query(DatabaseQuery $query, $args = null)
 	{
+		// If debug is enabled, note the start time
+		if ($this->debug)
+			$query_start = microtime(true);
+
 		// If the query hasn't already been compiled
 		if ($query->sql === null)
 			$query->sql = $this->dialect->compile($query);
@@ -60,6 +70,10 @@ class Database
 			$error = $query->statement->errorInfo();
 			throw new Exception($error[2]);
 		}
+
+		// If debug is enabled, note this query and how long it took
+		if ($this->debug)
+			$this->queries[] = array('sql' => $query->sql, 'params' => $args, 'duration' => (microtime(true) - $query_start));
 
 		// If it was a select query, return the results
 		if ($query instanceof SelectQuery)
@@ -92,5 +106,10 @@ class Database
 	public function in_transaction()
 	{
 		return $this->pdo->inTransaction();
+	}
+
+	public function fetch_debug_queries()
+	{
+		return $this->queries;
 	}
 }
