@@ -14,7 +14,7 @@ class SQLDialect
 		$this->prefix = $prefix;
 	}
 
-	public function compile($query)
+	public function compile(DatabaseQuery $query)
 	{
 		if ($query instanceof SelectQuery)
 			return $this->select($query);
@@ -31,7 +31,7 @@ class SQLDialect
 		throw new Exception('Unsupported query type: '.get_class($query));
 	}
 
-	protected function select($query)
+	protected function select(SelectQuery $query)
 	{
 		if (empty($query->fields))
 			throw new Exception('A SELECT query must select at least 1 field.');
@@ -57,7 +57,7 @@ class SQLDialect
 		return $sql;
 	}
 
-	protected function insert($query)
+	protected function insert(InsertQuery $query)
 	{
 		if (empty($query->table))
 			throw new Exception('An INSERT query must have a table specified.');
@@ -68,7 +68,7 @@ class SQLDialect
 		return 'INSERT INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
-	protected function update($query)
+	protected function update(UpdateQuery $query)
 	{
 		if (empty($query->table))
 			throw new Exception('An UPDATE query must have a table specified.');
@@ -92,7 +92,7 @@ class SQLDialect
 		return $sql;
 	}
 
-	protected function delete($query)
+	protected function delete(DeleteQuery $query)
 	{
 		if (empty($query->table))
 			throw new Exception('A DELETE query must have a table specified.');

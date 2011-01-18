@@ -44,7 +44,7 @@ class Database
 		}
 	}
 
-	public function query($query, $args = null)
+	public function query(DatabaseQuery $query, $args = null)
 	{
 		// If the query hasn't already been compiled
 		if ($query->sql === null)
