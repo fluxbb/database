@@ -45,14 +45,10 @@ class Database
 			if (!class_exists('SQLDialect_'.$dialect))
 				require PHPDB_ROOT.'dialects/'.$dialect.'.php';
 
-			// Confirm the chosen class implements SQLDialect
-			$class = new ReflectionClass('SQLDialect_'.$dialect);
-			if ($class->isSubclassOf('SQLDialect') === false)
-				throw new Exception('Does not conform to the SQLDialect interface: '.$dialect);
-
 			// Instantiate the dialect
-			$this->dialect = $class->newInstance($prefix);
-			$set_names_sql = $class->getConstant('SET_NAMES');
+			$dialect = 'SQLDialect_'.$dialect;
+			$this->dialect = new $dialect($prefix);
+			$set_names_sql = $dialect::SET_NAMES;
 		}
 
 		// If we need to set names for this database, do so
