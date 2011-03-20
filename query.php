@@ -50,8 +50,8 @@ class SelectQuery extends DatabaseQuery
 		$this->group = array();
 		$this->order = array();
 		$this->joins = array();
-		$this->where = array();
-		$this->having = array();
+		$this->where = '';
+		$this->having = '';
 		$this->limit = 0;
 		$this->offset = 0;
 	}
@@ -68,7 +68,7 @@ abstract class QueryJoin
 		$this->type = $type;
 		$this->table = $table;
 
-		$this->on = array();
+		$this->on = '';
 	}
 }
 
@@ -114,7 +114,7 @@ class UpdateQuery extends DatabaseQuery
 		$this->table = $table;
 
 		$this->order = array();
-		$this->where = array();
+		$this->where = '';
 		$this->limit = 0;
 		$this->offset = 0;
 	}
@@ -134,7 +134,7 @@ class DeleteQuery extends DatabaseQuery
 		$this->table = $table;
 
 		$this->order = array();
-		$this->where = array();
+		$this->where = '';
 		$this->limit = 0;
 		$this->offset = 0;
 	}

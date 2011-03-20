@@ -98,7 +98,7 @@ class SQLDialect
 		if (!empty($query->order))
 			$sql .= $this->order($query->order);
 
-		if ($limit > 0 || $offset > 0)
+		if ($query->limit > 0 || $query->offset > 0)
 			$sql .= $this->limit_offset($query->limit, $query->offset);
 
 		return $sql;
@@ -117,7 +117,7 @@ class SQLDialect
 		if (!empty($query->order))
 			$sql .= $this->order($query->order);
 
-		if ($limit > 0 || $offset > 0)
+		if ($query->limit > 0 || $query->offset > 0)
 			$sql .= $this->limit_offset($query->limit, $query->offset);
 
 		return $sql;
@@ -178,7 +178,7 @@ class SQLDialect
 
 	protected function conditions($conditions)
 	{
-		return '(???)'; // TODO
+		return '('.$conditions.')';
 	}
 
 	protected function order($order)
