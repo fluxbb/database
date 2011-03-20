@@ -36,10 +36,7 @@ class Database
 
 		// We are just using the default dialect
 		if ($dialect === null)
-		{
 			$this->dialect = new SQLDialect($prefix);
-			$set_names_sql = SQLDialect::SET_NAMES;
-		}
 		else
 		{
 			if (!class_exists('SQLDialect_'.$dialect))
@@ -48,18 +45,16 @@ class Database
 			// Instantiate the dialect
 			$dialect = 'SQLDialect_'.$dialect;
 			$this->dialect = new $dialect($prefix);
-			$set_names_sql = $dialect::SET_NAMES;
 		}
 
-		// If we need to set names for this database, do so
-		if (!empty($set_names_sql))
-		{
-			$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
-			$this->pdo->exec(sprintf($set_names_sql, $this->pdo->quote($charset)));
-		}
+		$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
+
+		// Attempt to set names
+		$query = new SetNamesQuery(':charset');
+		$this->query($query, array(':charset' => $charset));
 	}
 
-	public function query(DatabaseQuery $query, $args = null)
+	public function query(DatabaseQuery $query, $args = array())
 	{
 		// If debug is enabled, note the start time
 		if ($this->debug)
@@ -68,6 +63,10 @@ class Database
 		// If the query hasn't already been compiled
 		if ($query->sql === null)
 			$query->sql = $this->dialect->compile($query);
+
+		// If there is no query then do nothing
+		if (empty($query->sql))
+			return false;
 
 		// If the statement hasn't already been prepared
 		if ($query->statement === null)

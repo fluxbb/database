@@ -7,8 +7,6 @@
 
 class SQLDialect
 {
-	const SET_NAMES = 'SET NAMES %s';
-
 	protected $prefix;
 
 	public function __construct($prefix)
@@ -16,21 +14,26 @@ class SQLDialect
 		$this->prefix = $prefix;
 	}
 
-	public function compile(DatabaseQuery $query)
+	public final function compile(DatabaseQuery $query)
 	{
-		if ($query instanceof SelectQuery)
-			return $this->select($query);
+		$type = get_class($query);
+		switch ($type)
+		{
+			case 'SelectQuery': return $this->select($query);
+			case 'InsertQuery': return $this->insert($query);
+			case 'UpdateQuery': return $this->update($query);
+			case 'DeleteQuery': return $this->delete($query);
+			case 'TruncateQuery': return $this->truncate($query);
+			case 'ReplaceQuery': return $this->replace($query);
+			case 'SetNamesQuery': return $this->set_names($query);
 
-		if ($query instanceof InsertQuery)
-			return $this->insert($query);
+			// For direct queries we already have the SQL
+			case 'DirectQuery':
+				return $query->sql;
 
-		if ($query instanceof UpdateQuery)
-			return $this->update($query);
-
-		if ($query instanceof DeleteQuery)
-			return $this->delete($query);
-
-		throw new Exception('Unsupported query type: '.get_class($query));
+			default:
+				throw new Exception('Unsupported query type: '.$type);
+		}
 	}
 
 	protected function select(SelectQuery $query)
@@ -43,18 +46,23 @@ class SQLDialect
 		if (!empty($query->table))
 			$sql .= ' FROM '.$this->prefix.$query->table;
 
-		// TODO: joins
-		// TODO: where
+		if (!empty($query->joins))
+			$sql .= $this->join($query->joins);
+
+		if (!empty($query->where))
+			$sql .= $this->where($query->where);
 
 		if (!empty($query->group))
 			$sql .= $this->group($query->group);
 
-		// TODO: having
+		if (!empty($query->having))
+			$sql .= $this->having($query->having);
 
 		if (!empty($query->order))
 			$sql .= $this->order($query->order);
 
-		$sql .= $this->limit_offset($query->limit, $query->offset);
+		if ($query->limit > 0 || $query->offset > 0)
+			$sql .= $this->limit_offset($query->limit, $query->offset);
 
 		return $sql;
 	}
@@ -84,12 +92,14 @@ class SQLDialect
 
 		$sql = 'UPDATE '.$this->prefix.$query->table.' SET '.implode(', ', $updates);
 
-		// TODO: where
+		if (!empty($query->where))
+			$sql .= $this->where($query->where);
 
 		if (!empty($query->order))
 			$sql .= $this->order($query->order);
 
-		$sql .= $this->limit_offset($query->limit, $query->offset);
+		if ($limit > 0 || $offset > 0)
+			$sql .= $this->limit_offset($query->limit, $query->offset);
 
 		return $sql;
 	}
@@ -101,19 +111,74 @@ class SQLDialect
 
 		$sql = 'DELETE FROM '.$this->prefix.$query->table;
 
-		// TODO: where
+		if (!empty($query->where))
+			$sql .= $this->where($query->where);
 
 		if (!empty($query->order))
 			$sql .= $this->order($query->order);
 
-		$sql .= $this->limit_offset($query->limit, $query->offset);
+		if ($limit > 0 || $offset > 0)
+			$sql .= $this->limit_offset($query->limit, $query->offset);
 
 		return $sql;
+	}
+
+	protected function truncate(TruncateQuery $query)
+	{
+		if (empty($query->table))
+			throw new Exception('A TRUNCATE query must have a table specified.');
+
+		return 'TRUNCATE TABLE '.$this->prefix.$query->table;
+	}
+
+	protected function replace(ReplaceQuery $query)
+	{
+		if (empty($query->table))
+			throw new Exception('A REPLACE query must have a table specified.');
+
+		if (empty($query->values))
+			throw new Exception('A REPLACE query must contain at least 1 value.');
+
+		$sql = 'REPLACE INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+	}
+
+	protected function set_names(SetNamesQuery $query)
+	{
+		return 'SET NAMES '.$query->charset;
+	}
+
+	protected function join($joins)
+	{
+		$sql = '';
+
+		foreach ($joins as $join)
+		{
+			$sql .= ' '.$join->type.' '.$this->prefix.$join->table;
+			if (!empty($join->on))
+				$sql .= ' ON '.$this->conditions($join->on);
+		}
+
+		return $sql;
+	}
+
+	protected function where($where)
+	{
+		return ' WHERE '.$this->conditions($where);
 	}
 
 	protected function group($group)
 	{
 		return ' GROUP BY '.implode(', ', $group);
+	}
+
+	protected function having($having)
+	{
+		return ' HAVING '.$this->conditions($having);
+	}
+
+	protected function conditions($conditions)
+	{
+		return '(???)'; // TODO
 	}
 
 	protected function order($order)

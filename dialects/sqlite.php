@@ -9,7 +9,18 @@
 
 class SQLDialect_SQLite extends SQLDialect
 {
-	const SET_NAMES = null;
+	protected function truncate(TruncateQuery $query)
+	{
+		if (empty($query->table))
+			throw new Exception('A TRUNCATE query must have a table specified.');
+
+		return 'DELETE FROM '.$this->prefix.$query->table;
+	}
+
+	protected function set_names(SetNamesQuery $query)
+	{
+		return 'PRAGMA encoding = '.$query->charset;
+	}
 
 	protected function limit_offset($limit, $offset)
 	{

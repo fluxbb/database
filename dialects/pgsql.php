@@ -9,6 +9,24 @@
 
 class SQLDialect_PgSQL extends SQLDialect
 {
+	protected function replace(ReplaceQuery $query)
+	{
+		if (empty($query->table))
+			throw new Exception('A REPLACE query must have a table specified.');
+
+		if (empty($query->values))
+			throw new Exception('A REPLACE query must contain at least 1 value.');
+
+		$keys = array();
+		foreach ($query->keys as $key)
+		{
+			$value = $query->values[$key];
+			$keys[] = $key.' = '.$value;
+		}
+
+		$sql = 'INTO INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$this->prefix.$query->table.' WHERE ('.implode(' AND ', $keys).'))';
+	}
+
 	protected function limit_offset($limit, $offset)
 	{
 		$sql = '';
