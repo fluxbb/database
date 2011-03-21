@@ -19,7 +19,7 @@ class SQLDialect_SQLite extends SQLDialect
 
 	protected function set_names(SetNamesQuery $query)
 	{
-		return 'PRAGMA encoding = '.$query->charset;
+		return ''; // No need for SET NAMES in SQLite
 	}
 
 	protected function limit_offset($limit, $offset)
