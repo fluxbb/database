@@ -16,17 +16,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 ## License
 [LGPL - GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl.html)
 
-## API overview
-
-### __construct()
-
-	Database::__construct(string $dsn [, array $args = array() [, string $dialect = null]])
-
-
-	$db = new Database('sqlite::memory:', array('debug' => true), 'sqlite');
-
-
-## Query structures
+## Regular Query structures
 
 ### SELECT
 
@@ -41,6 +31,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 	$query->limit = 25;
 	$query->offset = 100;
 
+Will compile to something along the lines of:
 
 	SELECT t.id AS tid, t.time, t.fieldname, u.id AS uid, u.username FROM topics AS t INNER JOIN users AS u ON (u.id = t.user_id) WHERE (t.time > :now) GROUP BY t.id ORDER BY t.time DESC LIMIT 25 OFFSET 100
 
@@ -52,6 +43,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 	$query->limit = 1;
 	$query->offset = 100;
 
+Will compile to something along the lines of:
 
 	UPDATE topics SET user_id = :user_id WHERE id > :tid ORDER BY id DESC LIMIT 1 OFFSET 100
 
@@ -59,6 +51,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 
 	$query = new InsertQuery(array('time' => ':now', 'fieldname' => ':fieldname', 'user_id' => ':user_id'), 'topics');
 
+Will compile to something along the lines of:
 
 	INSERT INTO topics(time, fieldname, user_id) VALUES (:now, :fieldname, :user_id)
 
@@ -66,6 +59,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 
 	$query = new ReplaceQuery(array('id' => ':tid', 'time' => ':now', 'fieldname' => ':fieldname', 'user_id' => ':user_id'), 'topics', 'id');
 
+Will compile to something along the lines of:
 
 	REPLACE INTO topics(id, time, fieldname, user_id) VALUES(:tid, :now, :fieldname, :user_id)
 
@@ -77,6 +71,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 	$query->limit = 25;
 	$query->offset = 100;
 
+Will compile to something along the lines of:
 
 	DELETE FROM topics WHERE time < :now ORDER BY time DESC LIMIT 25 OFFSET 100
 
@@ -84,5 +79,6 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 
 	$query = new TruncateQuery('topics');
 
+Will compile to something along the lines of:
 
 	TRUNCATE TABLE topics
