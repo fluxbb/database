@@ -5,12 +5,24 @@
 * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
 */
 
+/**
+ * The base class for all database queries. Holds both the SQL
+ * for the query and a PDOStatement object once compiled.
+ *
+ * @abstract
+ */
 abstract class DatabaseQuery
 {
 	public $sql = null;
 	public $statement = null;
 }
 
+/**
+ * Represents a plain SQL query which bypasses the abstraction layer.
+ *
+ * @param string $sql
+ * 		The plain SQL query to represent.
+ */
 class DirectQuery extends DatabaseQuery
 {
 	public function __construct($sql)
@@ -19,6 +31,13 @@ class DirectQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents a SET NAMES query. Used to define the character set to
+ * be used by a database connection. Not applicable to all DBMS.
+ *
+ * @param string $charset
+ * 		The character set to be used.
+ */
 class SetNamesQuery extends DatabaseQuery
 {
 	public $charset;
@@ -29,6 +48,15 @@ class SetNamesQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents a SELECT query. Used to fetch data from the database.
+ *
+ * @param array $fields
+ * 		An array of field names to fetch.
+ *
+ * @param string $table
+ * 		The table from which to select data.
+ */
 class SelectQuery extends DatabaseQuery
 {
 	public $fields;
@@ -57,6 +85,17 @@ class SelectQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Base class for all query joins.
+ *
+ * @abstract
+ *
+ * @param string $type
+ * 		The type of join, for example INNER or LEFT.
+ *
+ * @param string $table
+ * 		The table on which we are joining.
+ */
 abstract class QueryJoin
 {
 	public $type;
@@ -72,6 +111,12 @@ abstract class QueryJoin
 	}
 }
 
+/**
+ * Represents an INNER JOIN.
+ *
+ * @param string $table
+ * 		The table on which we are joining.
+ */
 class InnerJoin extends QueryJoin {
 	public function __construct($table)
 	{
@@ -79,6 +124,12 @@ class InnerJoin extends QueryJoin {
 	}
 }
 
+/**
+ * Represents a LEFT JOIN.
+ *
+ * @param string $table
+ * 		The table on which we are joining.
+ */
 class LeftJoin extends QueryJoin {
 	public function __construct($table)
 	{
@@ -86,6 +137,15 @@ class LeftJoin extends QueryJoin {
 	}
 }
 
+/**
+ * Represents an INSERT query. Used to insert new data into a table.
+ *
+ * @param array $values
+ * 		An array of key=>value pairs containing the field name and data value.
+ *
+ * @param string $table
+ * 		The table which this data should be inserted to.
+ */
 class InsertQuery extends DatabaseQuery
 {
 	public $values;
@@ -98,6 +158,15 @@ class InsertQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents an UPDATE query. Used to update an existing row in a table.
+ *
+ * @param array $values
+ * 		An array of key=>value pairs containing the field name and data value.
+ *
+ * @param string $table
+ * 		The table which this data should be updated in.
+ */
 class UpdateQuery extends DatabaseQuery
 {
 	public $values;
@@ -120,6 +189,12 @@ class UpdateQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents a DELETE query. Used to delete a subset of data in a chosen table.
+ *
+ * @param string $table
+ * 		The table from which to delete data.
+ */
 class DeleteQuery extends DatabaseQuery
 {
 	public $table;
@@ -140,6 +215,12 @@ class DeleteQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents a TRUNCATE query. Used to delete all data in a chosen table.
+ *
+ * @param string $table
+ * 		The table from which to delete data.
+ */
 class TruncateQuery extends DatabaseQuery
 {
 	public $table;
@@ -150,6 +231,19 @@ class TruncateQuery extends DatabaseQuery
 	}
 }
 
+/**
+ * Represents a REPLACE query. If the table contains a matching row, it is
+ * updated - otherwise a new row is inserted.
+ *
+ * @param array $values
+ * 		An array of key=>value pairs containing the field name and data value.
+ *
+ * @param string $table
+ * 		The table which this data should be updated in or inserted to.
+ *
+ * @param array $keys
+ * 		An array of field names which are considered unique keys for the table.
+ */
 class ReplaceQuery extends DatabaseQuery
 {
 	public $values;

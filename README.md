@@ -10,7 +10,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 
 ## Supported dialects
  * MySQL
- * SQLite3
+ * SQLite
  * PostgreSQL
 
 ## License
