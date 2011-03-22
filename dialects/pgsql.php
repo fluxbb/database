@@ -31,13 +31,13 @@ class SQLDialect_PgSQL extends SQLDialect
 	{
 		$sql = '';
 
-		if ($offset !== 0 && $limit === 0)
+		if ($offset > 0 && $limit == 0)
 			$limit = 'ALL';
 
-		if ($limit !== 0)
+		if ($limit > 0)
 			$sql .= ' LIMIT '.$limit;
 
-		if ($offset !== 0)
+		if ($offset > 0)
 			$sql .= ' OFFSET '.$offset;
 
 		return $sql;

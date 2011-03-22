@@ -26,13 +26,13 @@ class SQLDialect_SQLite extends SQLDialect
 	{
 		$sql = '';
 
-		if ($offset !== 0 && $limit === 0)
+		if ($offset > 0 && $limit == 0)
 			$limit = -1;
 
-		if ($limit !== 0)
+		if ($limit > 0)
 			$sql .= ' LIMIT '.$limit;
 
-		if ($offset !== 0)
+		if ($offset > 0)
 			$sql .= ' OFFSET '.$offset;
 
 		return $sql;
