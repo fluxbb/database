@@ -32,23 +32,6 @@ class DirectQuery extends DatabaseQuery
 }
 
 /**
- * Represents a SET NAMES query. Used to define the character set to
- * be used by a database connection. Not applicable to all DBMS.
- *
- * @param string $charset
- * 		The character set to be used.
- */
-class SetNamesQuery extends DatabaseQuery
-{
-	public $charset;
-
-	public function __construct($charset)
-	{
-		$this->charset = $charset;
-	}
-}
-
-/**
  * Represents a SELECT query. Used to fetch data from the database.
  *
  * @param array $fields

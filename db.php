@@ -23,6 +23,9 @@ class Database
 	private $dialect;
 	private $queries;
 
+	public $prefix;
+	public $charset;
+
 	/**
 	 * Creates a Database instance to hold a connection to the requested database
 	 * via PDO, and a dialect instance for compiling abstract query representations
@@ -43,6 +46,7 @@ class Database
 		$password = isset($args['password']) ? $args['password'] : '';
 		$options = isset($args['options']) ? $args['options'] : array();
 		$prefix = isset($args['prefix']) ? $args['prefix'] : '';
+		$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
 
 		$this->queries = array();
 
@@ -51,7 +55,7 @@ class Database
 
 		// We are just using the default dialect
 		if ($dialect === null)
-			$this->dialect = new SQLDialect($prefix);
+			$this->dialect = new SQLDialect($this);
 		else
 		{
 			if (!class_exists('SQLDialect_'.$dialect))
@@ -59,14 +63,49 @@ class Database
 
 			// Instantiate the dialect
 			$dialect = 'SQLDialect_'.$dialect;
-			$this->dialect = new $dialect($prefix);
+			$this->dialect = new $dialect($this);
 		}
 
-		$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
-
 		// Attempt to set names
-		$query = new SetNamesQuery(':charset');
-		$this->query($query, array(':charset' => $charset));
+		$this->set_names($charset);
+	}
+
+	/**
+	 * Indicates what character set the database connection should use.
+	 *
+	 * @param string $charset
+	 * 		The character set to use.
+	 */
+	public function set_names($charset)
+	{
+		$sql = $this->dialect->set_names($charset);
+		if (empty($sql))
+			return;
+
+		if ($this->pdo->exec($sql) === false)
+			return;
+
+		$this->charset = $charset;
+	}
+
+	/**
+	 * Places quotes around the input string (if required) and escapes special
+	 * characters within the input string, using a quoting style appropriate
+	 * to the underlying driver.
+	 *
+	 * @param string $str
+	 * 		The string to be quoted.
+	 *
+	 * @return string
+	 * 		A quoted string that is theoretically safe to pass into a SQL statement.
+	 */
+	public function quote($str)
+	{
+		$quoted_str = $this->pdo->quote($str);
+		if ($quoted_str === false)
+			$quoted_str = '\''.$str.'\'';
+
+		return $quoted_str;
 	}
 
 	/**

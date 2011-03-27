@@ -7,11 +7,11 @@
 
 class SQLDialect
 {
-	protected $prefix;
+	protected $db;
 
-	public function __construct($prefix)
+	public function __construct($db)
 	{
-		$this->prefix = $prefix;
+		$this->db = $db;
 	}
 
 	public final function compile(DatabaseQuery $query)
@@ -27,9 +27,6 @@ class SQLDialect
 			case 'TruncateQuery': return $this->truncate($query);
 			case 'ReplaceQuery': return $this->replace($query);
 
-			// Meta queries
-			case 'SetNamesQuery': return $this->set_names($query);
-
 			// Utility queries
 			case 'CreateTableQuery': return $this->create_table($query);
 			case 'DropTableQuery': return $this->drop_table($query);
@@ -43,6 +40,11 @@ class SQLDialect
 		}
 	}
 
+	public function set_names($charset)
+	{
+		return 'SET NAMES '.$this->db->quote($charset);
+	}
+
 	protected function select(SelectQuery $query)
 	{
 		if (empty($query->fields))
@@ -51,7 +53,7 @@ class SQLDialect
 		$sql = 'SELECT '.implode(', ', $query->fields);
 
 		if (!empty($query->table))
-			$sql .= ' FROM '.$this->prefix.$query->table;
+			$sql .= ' FROM '.$this->db->prefix.$query->table;
 
 		if (!empty($query->joins))
 			$sql .= $this->join($query->joins);
@@ -82,7 +84,7 @@ class SQLDialect
 		if (empty($query->values))
 			throw new Exception('An INSERT query must contain at least 1 value.');
 
-		return 'INSERT INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+		return 'INSERT INTO '.$this->db->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
 	protected function update(UpdateQuery $query)
@@ -97,7 +99,7 @@ class SQLDialect
 		foreach ($query->values as $key => $value)
 			$updates[] = $key.'='.$value;
 
-		$sql = 'UPDATE '.$this->prefix.$query->table.' SET '.implode(', ', $updates);
+		$sql = 'UPDATE '.$this->db->prefix.$query->table.' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
 			$sql .= $this->where($query->where);
@@ -116,7 +118,7 @@ class SQLDialect
 		if (empty($query->table))
 			throw new Exception('A DELETE query must have a table specified.');
 
-		$sql = 'DELETE FROM '.$this->prefix.$query->table;
+		$sql = 'DELETE FROM '.$this->db->prefix.$query->table;
 
 		if (!empty($query->where))
 			$sql .= $this->where($query->where);
@@ -135,7 +137,7 @@ class SQLDialect
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		return 'TRUNCATE TABLE '.$this->prefix.$query->table;
+		return 'TRUNCATE TABLE '.$this->db->prefix.$query->table;
 	}
 
 	protected function replace(ReplaceQuery $query)
@@ -146,12 +148,7 @@ class SQLDialect
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least 1 value.');
 
-		$sql = 'REPLACE INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
-	}
-
-	protected function set_names(SetNamesQuery $query)
-	{
-		return 'SET NAMES '.$query->charset;
+		$sql = 'REPLACE INTO '.$this->db->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
 	protected function create_table(CreateTableQuery $query)
@@ -200,7 +197,7 @@ class SQLDialect
 
 		foreach ($joins as $join)
 		{
-			$sql .= ' '.$join->type.' '.$this->prefix.$join->table;
+			$sql .= ' '.$join->type.' '.$this->db->prefix.$join->table;
 			if (!empty($join->on))
 				$sql .= ' ON '.$this->conditions($join->on);
 		}

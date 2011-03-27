@@ -9,5 +9,13 @@
 
 class SQLDialect_MySQL extends SQLDialect
 {
+	protected function create_table(CreateTableQuery $query)
+	{
+		$sql = parent::create_table($query);
 
+		if (!empty($this->charset))
+			$sql .= ' CHARSET = '.$this->db->quote($this->charset);
+
+		return $sql;
+	}
 }

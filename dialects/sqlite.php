@@ -9,17 +9,17 @@
 
 class SQLDialect_SQLite extends SQLDialect
 {
+	public function set_names($charset)
+	{
+		return 'PRAGMA encoding = '.$this->db->quote($charset);
+	}
+
 	protected function truncate(TruncateQuery $query)
 	{
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		return 'DELETE FROM '.$this->prefix.$query->table;
-	}
-
-	protected function set_names(SetNamesQuery $query)
-	{
-		return ''; // No need for SET NAMES in SQLite
 	}
 
 	protected function column_serial($name)
