@@ -282,6 +282,18 @@ class CreateTableQuery extends DatabaseQuery
 	}
 }
 
+class RenameTableQuery extends DatabaseQuery
+{
+	public $table;
+	public $new_name;
+
+	public function __construct($table, $new_name)
+	{
+		$this->table = $table;
+		$this->new_name = $new_name;
+	}
+}
+
 class DropTableQuery extends DatabaseQuery
 {
 	public $table;

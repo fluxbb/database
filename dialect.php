@@ -29,6 +29,7 @@ class SQLDialect
 
 			// Utility queries
 			case 'CreateTableQuery': return $this->create_table($query);
+			case 'RenameTableQuery': return $this->rename_table($query);
 			case 'DropTableQuery': return $this->drop_table($query);
 
 			// For direct queries we already have the SQL
@@ -158,6 +159,11 @@ class SQLDialect
 			$columns[] = $this->column_definition($column);
 
 		return 'CREATE TABLE '.$query->table.' ('.implode(', ', $columns).')';
+	}
+
+	protected function rename_table(RenameTableQuery $query)
+	{
+		return 'ALTER TABLE '.$query->table.' RENAME TO '.$query->new_name;
 	}
 
 	protected function drop_table(DropTableQuery $query)
