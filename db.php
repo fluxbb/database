@@ -120,6 +120,20 @@ class Database
 		return $query->statement->rowCount();
 	}
 
+	/**
+	 * Converts the placeholders for any array parameters into a
+	 * comma separated list of placeholders, then merges the array into
+	 * the main parameter array.
+	 *
+	 * This has the effect of converting IN :ids to IN (:ids0, :ids1, ...)
+	 * when :ids is bound to an array.
+	 *
+	 * @param string $sql
+	 * 		The compiled SQL query.
+	 *
+	 * @param array $params
+	 * 		An array of parameters to be passed with the query.
+	 */
 	protected function handle_arrays(&$sql, &$params)
 	{
 		$additions = array();
