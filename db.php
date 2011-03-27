@@ -113,7 +113,7 @@ class Database
 		$this->queries[] = array('sql' => $query->sql, 'params' => $params, 'duration' => (microtime(true) - $query_start));
 
 		// If it was a select query, return the results
-		if ($query instanceof SelectQuery)
+		if ($query instanceof SelectQuery || ($query instanceof DirectQuery && preg_match('%^SELECT\s%i', $query->sql)))
 			return $query->statement->fetchAll(PDO::FETCH_ASSOC);
 
 		// Otherwise return the number of affected rows
