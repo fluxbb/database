@@ -95,6 +95,9 @@ class Database
 		if (empty($query->sql))
 			return 0;
 
+		// Handle any param arrays
+		$this->handle_arrays($query->sql, $params);
+
 		// If the statement hasn't already been prepared
 		if ($query->statement === null)
 			$query->statement = $this->pdo->prepare($query->sql);
@@ -115,6 +118,34 @@ class Database
 
 		// Otherwise return the number of affected rows
 		return $query->statement->rowCount();
+	}
+
+	protected function handle_arrays(&$sql, &$params)
+	{
+		$additions = array();
+
+		foreach ($params as $key => $values)
+		{
+			if (!is_array($values))
+				continue;
+
+			// We found a param array, lets handle it
+
+			$temp = array();
+			$count = count($values);
+			for ($i = 0;$i < $count;$i++)
+			{
+				$temp[] = $key.$i;
+				$additions[$key.$i] = $values[$i];
+			}
+
+			// Replace the old placeholder with a collection of new ones
+			$sql = str_replace($key, '('.implode(', ', $temp).')', $sql);
+			unset ($params[$key], $temp);
+		}
+
+		if (!empty($additions))
+			$params = array_merge($params, $additions);
 	}
 
 	/**
