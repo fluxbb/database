@@ -22,6 +22,11 @@ class SQLDialect_SQLite extends SQLDialect
 		return ''; // No need for SET NAMES in SQLite
 	}
 
+	protected function column_serial($name)
+	{
+		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
+	}
+
 	protected function limit_offset($limit, $offset)
 	{
 		$sql = '';

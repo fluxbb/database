@@ -19,13 +19,20 @@ class SQLDialect
 		$type = get_class($query);
 		switch ($type)
 		{
+			// Regular queries
 			case 'SelectQuery': return $this->select($query);
 			case 'InsertQuery': return $this->insert($query);
 			case 'UpdateQuery': return $this->update($query);
 			case 'DeleteQuery': return $this->delete($query);
 			case 'TruncateQuery': return $this->truncate($query);
 			case 'ReplaceQuery': return $this->replace($query);
+
+			// Meta queries
 			case 'SetNamesQuery': return $this->set_names($query);
+
+			// Utility queries
+			case 'CreateTableQuery': return $this->create_table($query);
+			case 'DropTableQuery': return $this->drop_table($query);
 
 			// For direct queries we already have the SQL
 			case 'DirectQuery':
@@ -145,6 +152,46 @@ class SQLDialect
 	protected function set_names(SetNamesQuery $query)
 	{
 		return 'SET NAMES '.$query->charset;
+	}
+
+	protected function create_table(CreateTableQuery $query)
+	{
+		$columns = array();
+		foreach ($query->columns as $column)
+			$columns[] = $this->column_definition($column);
+
+		return 'CREATE TABLE '.$query->table.' ('.implode(', ', $columns).')';
+	}
+
+	protected function drop_table(DropTableQuery $query)
+	{
+		return 'DROP TABLE '.$query->table;
+	}
+
+	protected function column_definition(TableColumn $column)
+	{
+		if ($column->type === TableColumn::TYPE_SERIAL)
+			return $this->column_serial($column->name);
+
+		$sql = $column->name.' '.$this->column_type($column->type);
+
+		if (!empty($column->default))
+			$sql .= ' DEFAULT '.$column->default;
+
+		if (!empty($column->key))
+			$sql .= ' '.$column->key;
+
+		return $sql;
+	}
+
+	protected function column_type($type)
+	{
+		return $type;
+	}
+
+	protected function column_serial($name)
+	{
+		return $name.' INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY';
 	}
 
 	protected function join($joins)

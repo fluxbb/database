@@ -27,6 +27,11 @@ class SQLDialect_PgSQL extends SQLDialect
 		$sql = 'INTO INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$this->prefix.$query->table.' WHERE ('.implode(' AND ', $keys).'))';
 	}
 
+	protected function column_serial($name)
+	{
+		return $name.' SERIAL NOT NULL PRIMARY KEY';
+	}
+
 	protected function limit_offset($limit, $offset)
 	{
 		$sql = '';

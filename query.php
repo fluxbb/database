@@ -257,3 +257,54 @@ class ReplaceQuery extends DatabaseQuery
 		$this->keys = is_array($keys) ? $keys : array($keys);
 	}
 }
+
+// TODO: Below here are utility queries
+
+class TableColumn
+{
+	const TYPE_SERIAL = 'SERIAL';
+	const TYPE_TEXT = 'TEXT';
+	const TYPE_BOOL = 'BOOLEAN';
+	const TYPE_UINT = 'INTEGER UNSIGNED';
+	const TYPE_INT = 'INTEGER';
+
+	public static function TYPE_VARCHAR($length = 255) { return 'VARCHAR('.intval($length).')'; }
+
+	const KEY_UNIQUE = 'UNIQUE';
+	const KEY_PRIMARY = 'PRIMARY KEY';
+
+	public $name;
+	public $type;
+	public $default;
+	public $key;
+
+	public function __construct($name, $type, $default = null, $key = null)
+	{
+		$this->name = $name;
+		$this->type = $type;
+		$this->default = $default;
+		$this->key = $key;
+	}
+}
+
+class CreateTableQuery extends DatabaseQuery
+{
+	public $table;
+	public $columns;
+
+	public function __construct($table, $columns)
+	{
+		$this->table = $table;
+		$this->columns = $columns;
+	}
+}
+
+class DropTableQuery extends DatabaseQuery
+{
+	public $table;
+
+	public function __construct($table)
+	{
+		$this->table = $table;
+	}
+}
