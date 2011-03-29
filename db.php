@@ -271,8 +271,30 @@ class Database
 	 * @return array
 	 * 		A list of queries which have been previously executed.
 	 */
-	public function fetch_debug_queries()
+	public function get_debug_queries()
 	{
 		return $this->queries;
+	}
+
+	/**
+	 * Fetch the underlying driver name and client/server versions.
+	 *
+	 * @return string
+	 * 		A string in the format "driver_name client_version/server_version"
+	 */
+	public function get_version()
+	{
+		try
+		{
+			return sprintf('%s %s/%s',
+				$this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME),
+				$this->pdo->getAttribute(PDO::ATTR_CLIENT_VERSION),
+				$this->pdo->getAttribute(PDO::ATTR_SERVER_VERSION)
+			);
+		}
+		catch (PDOException $e)
+		{
+			return 'unknown';
+		}
 	}
 }
