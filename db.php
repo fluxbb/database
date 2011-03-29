@@ -19,6 +19,7 @@ class Database
 	 */
 	const DEFAULT_CHARSET = 'utf8';
 
+	private $type;
 	private $pdo;
 	private $dialect;
 	private $queries;
@@ -40,7 +41,7 @@ class Database
 	 * @param string $dialect
 	 * 		The SQL dialect to use.
 	 */
-	public function __construct($dsn, $args = array(), $dialect = null)
+	public function __construct($dsn, $args = array())
 	{
 		$username = isset($args['username']) ? $args['username'] : '';
 		$password = isset($args['password']) ? $args['password'] : '';
@@ -53,18 +54,22 @@ class Database
 		$this->pdo = new PDO($dsn, $username, $password, $options);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-		// We are just using the default dialect
-		if ($dialect === null)
-			$this->dialect = new SQLDialect($this);
-		else
+		// Fetch the driver type
+		$this->type = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+		// We have a dialect for this database type, load it
+		if (file_exists(PHPDB_ROOT.'dialects/'.$this->type.'.php'))
 		{
-			if (!class_exists('SQLDialect_'.$dialect))
-				require PHPDB_ROOT.'dialects/'.$dialect.'.php';
+			if (!class_exists('SQLDialect_'.$this->type))
+				require PHPDB_ROOT.'dialects/'.$this->type.'.php';
 
 			// Instantiate the dialect
-			$dialect = 'SQLDialect_'.$dialect;
+			$dialect = 'SQLDialect_'.$this->type;
 			$this->dialect = new $dialect($this);
 		}
+		// Load the default dialect
+		else
+			$this->dialect = new SQLDialect($this);
 
 		// Attempt to set names
 		$this->set_names($charset);
@@ -284,17 +289,15 @@ class Database
 	 */
 	public function get_version()
 	{
-		try
-		{
-			return sprintf('%s %s/%s',
-				$this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME),
-				$this->pdo->getAttribute(PDO::ATTR_CLIENT_VERSION),
-				$this->pdo->getAttribute(PDO::ATTR_SERVER_VERSION)
-			);
-		}
-		catch (PDOException $e)
-		{
-			return 'unknown';
-		}
+		$client = $server = '?';
+
+		try { $client = $this->pdo->getAttribute(PDO::ATTR_CLIENT_VERSION); } catch (PDOException $e) {}
+		try { $server = $this->pdo->getAttribute(PDO::ATTR_SERVER_VERSION); } catch (PDOException $e) {}
+
+		return sprintf('%s %s/%s',
+			$this->type,
+			$client,
+			$server
+		);
 	}
 }
