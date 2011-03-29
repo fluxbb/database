@@ -44,14 +44,11 @@ class SQLDialect_PgSQL extends SQLDialect
 	{
 		$sql = '';
 
-		if ($offset > 0 && $limit == 0)
-			$limit = 'ALL';
-
 		if ($limit > 0)
-			$sql .= ' LIMIT '.$limit;
+			$sql .= ' LIMIT '.intval($limit);
 
 		if ($offset > 0)
-			$sql .= ' OFFSET '.$offset;
+			$sql .= ' OFFSET '.intval($offset);
 
 		return $sql;
 	}

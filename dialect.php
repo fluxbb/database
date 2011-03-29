@@ -244,10 +244,10 @@ class SQLDialect
 			$limit = PHP_INT_MAX;
 
 		if ($limit > 0)
-			$sql .= ' LIMIT '.$limit;
+			$sql .= ' LIMIT '.intval($limit);
 
 		if ($offset > 0)
-			$sql .= ' OFFSET '.$offset;
+			$sql .= ' OFFSET '.intval($offset);
 
 		return $sql;
 	}

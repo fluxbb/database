@@ -35,10 +35,10 @@ class SQLDialect_SQLite extends SQLDialect
 			$limit = -1;
 
 		if ($limit > 0)
-			$sql .= ' LIMIT '.$limit;
+			$sql .= ' LIMIT '.intval($limit);
 
 		if ($offset > 0)
-			$sql .= ' OFFSET '.$offset;
+			$sql .= ' OFFSET '.intval($offset);
 
 		return $sql;
 	}
