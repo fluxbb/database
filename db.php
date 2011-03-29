@@ -73,6 +73,9 @@ class Database
 
 		// Attempt to set names
 		$this->set_names($charset);
+
+		// Set the table prefix
+		$this->set_prefix($prefix);
 	}
 
 	/**
@@ -91,6 +94,17 @@ class Database
 			return;
 
 		$this->charset = $charset;
+	}
+
+	/**
+	 * Set the table prefix to be used.
+	 *
+	 * @param string $prefix
+	 * 		The table prefix to be used.
+	 */
+	public function set_prefix($prefix)
+	{
+		$this->prefix = $prefix;
 	}
 
 	/**
