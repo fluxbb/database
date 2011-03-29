@@ -32,6 +32,14 @@ class SQLDialect_PgSQL extends SQLDialect
 		return $name.' SERIAL NOT NULL PRIMARY KEY';
 	}
 
+	protected function conditions($conditions)
+	{
+		$sql = parent::conditions($conditions);
+
+		// Replace LIKE with ILIKE to get case insensitive match
+		return preg_replace('%(\s)(LIKE)(\s)%i', '$1ILIKE$1', $sql);
+	}
+
 	protected function limit_offset($limit, $offset)
 	{
 		$sql = '';
