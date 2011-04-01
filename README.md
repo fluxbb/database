@@ -27,7 +27,7 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 		void set_prefix( string $prefix )
 		string quote( string $str )
 		mixed query( DatabaseQuery $query [, array $params = array()] )
-		int insert_id( void )
+		string insert_id( void )
 		bool start_transaction( void )
 		bool commit_transaction( void )
 		bool rollback_transaction( void )
