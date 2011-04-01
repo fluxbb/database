@@ -16,6 +16,26 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 ## License
 [LGPL - GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl.html)
 
+## Database class overview
+
+	Database {
+		string $prefix
+		string $charset
+
+		__construct( string $dsn [, array $args = array()] )
+		void set_names( string $charset )
+		void set_prefix( string $prefix )
+		string quote( string $str )
+		mixed query( DatabaseQuery $query [, array $params = array()] )
+		int insert_id( void )
+		bool start_transaction( void )
+		bool commit_transaction( void )
+		bool rollback_transaction( void )
+		bool in_transaction( void )
+		array get_debug_queries( void )
+		string get_version( void )
+	}
+
 ## Regular Query structures
 
 ### SELECT
