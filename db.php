@@ -136,7 +136,7 @@ class Database
 	 * @param array $params
 	 * 		An array of parameters to combine with the query.
 	 *
-	 * @return array|int
+	 * @return mixed
 	 * 		Select queries returns the entire result as an array.
 	 * 		Other query types returns the number of affected rows.
 	 */
