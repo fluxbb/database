@@ -46,8 +46,8 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 	$query->joins['u']->on = 'u.id = t.user_id';
 	
 	$query->where = 't.time > :now';
-	$query->group_by = array('tid' => 't.id');
-	$query->order_by = array('time' => 't.time DESC');
+	$query->group = array('tid' => 't.id');
+	$query->order = array('time' => 't.time DESC');
 	$query->limit = 25;
 	$query->offset = 100;
 
@@ -59,7 +59,7 @@ Will compile to something along the lines of:
 
 	$query = new UpdateQuery(array('user_id' => ':user_id'), 'topics');
 	$query->where = 'id > :tid';
-	$query->order_by = array('id' => 'id DESC');
+	$query->order = array('id' => 'id DESC');
 	$query->limit = 1;
 	$query->offset = 100;
 
@@ -87,7 +87,7 @@ Will compile to something along the lines of:
 
 	$query = new DeleteQuery('topics');
 	$query->where = 'time < :now';
-	$query->order_by = array('time' => 'time DESC');
+	$query->order = array('time' => 'time DESC');
 	$query->limit = 25;
 	$query->offset = 100;
 
