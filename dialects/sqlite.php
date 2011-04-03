@@ -9,6 +9,11 @@
 
 class SQLDialect_SQLite extends SQLDialect
 {
+	public function __construct($db, $args = array())
+	{
+		parent::__construct($db, $args = array());
+	}
+
 	public function set_names($charset)
 	{
 		return 'PRAGMA encoding = '.$this->db->quote($charset);

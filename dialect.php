@@ -9,7 +9,7 @@ class SQLDialect
 {
 	protected $db;
 
-	public function __construct($db)
+	public function __construct($db, $args = array())
 	{
 		$this->db = $db;
 	}

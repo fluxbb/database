@@ -9,6 +9,11 @@
 
 class SQLDialect_PgSQL extends SQLDialect
 {
+	public function __construct($db, $args = array())
+	{
+		parent::__construct($db, $args);
+	}
+
 	protected function replace(ReplaceQuery $query)
 	{
 		if (empty($query->table))

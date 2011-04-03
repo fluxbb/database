@@ -45,13 +45,14 @@ class Database
 	{
 		$username = isset($args['username']) ? $args['username'] : '';
 		$password = isset($args['password']) ? $args['password'] : '';
-		$options = isset($args['options']) ? $args['options'] : array();
+		$driver_options = isset($args['driver_options']) ? $args['driver_options'] : array();
+		$dialect_options = isset($args['dialect_options']) ? $args['dialect_options'] : array();
 		$prefix = isset($args['prefix']) ? $args['prefix'] : '';
 		$charset = isset($args['charset']) ? $args['charset'] : self::DEFAULT_CHARSET;
 
 		$this->queries = array();
 
-		$this->pdo = new PDO($dsn, $username, $password, $options);
+		$this->pdo = new PDO($dsn, $username, $password, $driver_options);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 		// Fetch the driver type
@@ -65,11 +66,11 @@ class Database
 
 			// Instantiate the dialect
 			$dialect = 'SQLDialect_'.$this->type;
-			$this->dialect = new $dialect($this);
+			$this->dialect = new $dialect($this, $dialect_options);
 		}
 		// Load the default dialect
 		else
-			$this->dialect = new SQLDialect($this);
+			$this->dialect = new SQLDialect($this, $dialect_options);
 
 		// Attempt to set names
 		$this->set_names($charset);
