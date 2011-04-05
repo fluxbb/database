@@ -44,6 +44,7 @@ class SelectQuery extends DatabaseQuery
 {
 	public $fields;
 	public $table;
+	public $distinct;
 
 	public $group;
 	public $order;
@@ -53,10 +54,11 @@ class SelectQuery extends DatabaseQuery
 	public $limit;
 	public $offset;
 
-	public function __construct($fields, $table = null)
+	public function __construct($fields, $table = null, $distinct = false)
 	{
 		$this->fields = $fields;
 		$this->table = $table;
+		$this->distinct = $distinct;
 
 		$this->group = array();
 		$this->order = array();

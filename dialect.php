@@ -51,7 +51,7 @@ class SQLDialect
 		if (empty($query->fields))
 			throw new Exception('A SELECT query must select at least 1 field.');
 
-		$sql = 'SELECT '.implode(', ', $query->fields);
+		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
 		if (!empty($query->table))
 			$sql .= ' FROM '.$this->db->prefix.$query->table;
