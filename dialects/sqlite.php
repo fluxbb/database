@@ -2,7 +2,7 @@
 
 /**
  * SQL Dialect for SQLite
- * 
+ *
  * Copyright (C) 2011 FluxBB (http://fluxbb.org)
  * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
  */
@@ -24,7 +24,7 @@ class SQLDialect_SQLite extends SQLDialect
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		return 'DELETE FROM '.$this->prefix.$query->table;
+		return 'DELETE FROM '.$this->db->prefix.$query->table;
 	}
 
 	protected function column_serial($name)
