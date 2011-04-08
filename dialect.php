@@ -98,7 +98,7 @@ class SQLDialect
 
 		$updates = array();
 		foreach ($query->values as $key => $value)
-			$updates[] = $key.'='.$value;
+			$updates[] = $key.' = '.$value;
 
 		$sql = 'UPDATE '.$this->db->prefix.$query->table.' SET '.implode(', ', $updates);
 
