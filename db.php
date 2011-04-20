@@ -61,11 +61,11 @@ class Database
 		// We have a dialect for this database type, load it
 		if (file_exists(PHPDB_ROOT.'dialects/'.$this->type.'.php'))
 		{
-			if (!class_exists('SQLDialect_'.$this->type))
+			if (!class_exists($this->type.'Dialect'))
 				require PHPDB_ROOT.'dialects/'.$this->type.'.php';
 
 			// Instantiate the dialect
-			$dialect = 'SQLDialect_'.$this->type;
+			$dialect = $this->type.'Dialect';
 			$this->dialect = new $dialect($this, $dialect_options);
 		}
 		// Load the default dialect

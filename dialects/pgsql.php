@@ -2,12 +2,12 @@
 
 /**
  * SQL Dialect for PostgreSQL
- * 
+ *
  * Copyright (C) 2011 FluxBB (http://fluxbb.org)
  * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
  */
 
-class SQLDialect_PgSQL extends SQLDialect
+class PgSQLDialect extends SQLDialect
 {
 	public function __construct($db, $args = array())
 	{

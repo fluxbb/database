@@ -7,7 +7,7 @@
  * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
  */
 
-class SQLDialect_SQLite extends SQLDialect
+class SQLiteDialect extends SQLDialect
 {
 	public function __construct($db, $args = array())
 	{
