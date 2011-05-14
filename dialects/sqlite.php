@@ -24,6 +24,11 @@ class SQLiteDialect extends SQLDialect
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
+		// Reset sequence counter
+		$deleteQuery = new DirectQuery('DELETE FROM sqlite_sequence WHERE name = :name');
+		$params = array(':name' => $query->table);
+		$this->db->query($deleteQuery, $params);
+
 		return 'DELETE FROM '.$this->db->prefix.$query->table;
 	}
 
