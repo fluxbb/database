@@ -29,7 +29,7 @@ class PgSQLDialect extends SQLDialect
 			$keys[] = $key.' = '.$value;
 		}
 
-		$sql = 'INTO INTO '.$this->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$this->prefix.$query->table.' WHERE ('.implode(' AND ', $keys).'))';
+		$sql = 'INTO INTO '.($query->use_prefix ? $this->db->prefix : '').$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table.' WHERE ('.implode(' AND ', $keys).'))';
 	}
 
 	protected function truncate(TruncateQuery $query)
@@ -37,7 +37,7 @@ class PgSQLDialect extends SQLDialect
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		return 'TRUNCATE TABLE '.$this->db->prefix.$query->table.' RESTART IDENTITY';
+		return 'TRUNCATE TABLE '.($query->use_prefix ? $this->db->prefix : '').$query->table.' RESTART IDENTITY';
 	}
 
 	protected function column_serial($name)

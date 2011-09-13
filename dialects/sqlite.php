@@ -29,7 +29,7 @@ class SQLiteDialect extends SQLDialect
 		$params = array(':name' => $query->table);
 		$this->db->query($deleteQuery, $params);
 
-		return 'DELETE FROM '.$this->db->prefix.$query->table;
+		return 'DELETE FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 	}
 
 	protected function column_serial($name)

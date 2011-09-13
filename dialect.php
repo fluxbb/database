@@ -54,7 +54,7 @@ class SQLDialect
 		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
 		if (!empty($query->table))
-			$sql .= ' FROM '.$this->db->prefix.$query->table;
+			$sql .= ' FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 
 		if (!empty($query->joins))
 			$sql .= $this->join($query->joins);
@@ -85,7 +85,7 @@ class SQLDialect
 		if (empty($query->values))
 			throw new Exception('An INSERT query must contain at least 1 value.');
 
-		return 'INSERT INTO '.$this->db->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+		return 'INSERT INTO '.($query->use_prefix ? $this->db->prefix : '').$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
 	protected function update(UpdateQuery $query)
@@ -100,7 +100,7 @@ class SQLDialect
 		foreach ($query->values as $key => $value)
 			$updates[] = $key.' = '.$value;
 
-		$sql = 'UPDATE '.$this->db->prefix.$query->table.' SET '.implode(', ', $updates);
+		$sql = 'UPDATE '.($query->use_prefix ? $this->db->prefix : '').$query->table.' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
 			$sql .= $this->where($query->where);
@@ -119,7 +119,7 @@ class SQLDialect
 		if (empty($query->table))
 			throw new Exception('A DELETE query must have a table specified.');
 
-		$sql = 'DELETE FROM '.$this->db->prefix.$query->table;
+		$sql = 'DELETE FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 
 		if (!empty($query->where))
 			$sql .= $this->where($query->where);
@@ -138,7 +138,7 @@ class SQLDialect
 		if (empty($query->table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		return 'TRUNCATE TABLE '.$this->db->prefix.$query->table;
+		return 'TRUNCATE TABLE '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 	}
 
 	protected function replace(ReplaceQuery $query)
@@ -149,7 +149,7 @@ class SQLDialect
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least 1 value.');
 
-		$sql = 'REPLACE INTO '.$this->db->prefix.$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+		$sql = 'REPLACE INTO '.($query->use_prefix ? $this->db->prefix : '').$query->table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 	}
 
 	protected function create_table(CreateTableQuery $query)

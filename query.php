@@ -6,8 +6,9 @@
 */
 
 /**
- * The base class for all database queries. Holds both the SQL
- * for the query and a PDOStatement object once compiled.
+ * The base class for all database queries. Holds the SQL
+ * for the query and a PDOStatement object once compiled,
+ * plus some other common properties.
  *
  * @abstract
  */
@@ -15,6 +16,8 @@ abstract class DatabaseQuery
 {
 	public $sql = null;
 	public $statement = null;
+
+	public $use_prefix = true;
 }
 
 /**
