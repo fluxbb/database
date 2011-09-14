@@ -52,6 +52,7 @@ class Database
 
 		$this->queries = array();
 
+		// TODO: Handle PDOException properly to avoid displaying connection details
 		$this->pdo = new PDO($dsn, $username, $password, $driver_options);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
