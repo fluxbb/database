@@ -53,9 +53,12 @@ class PgSQLDialect extends SQLDialect
 		return preg_replace('%(\s)(LIKE)(\s)%i', '$1ILIKE$1', $sql);
 	}
 
-	protected function limit_offset($limit, $offset)
+	protected function limit_offset(DatabaseQuery $query)
 	{
 		$sql = '';
+
+		$limit = $query->limit;
+		$offset = $query->offset;
 
 		if ($limit > 0)
 			$sql .= ' LIMIT '.intval($limit);

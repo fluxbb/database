@@ -57,22 +57,22 @@ class SQLDialect
 			$sql .= ' FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 
 		if (!empty($query->joins))
-			$sql .= $this->join($query->joins);
+			$sql .= $this->join($query);
 
 		if (!empty($query->where))
-			$sql .= $this->where($query->where);
+			$sql .= $this->where($query);
 
 		if (!empty($query->group))
-			$sql .= $this->group($query->group);
+			$sql .= $this->group($query);
 
 		if (!empty($query->having))
-			$sql .= $this->having($query->having);
+			$sql .= $this->having($query);
 
 		if (!empty($query->order))
-			$sql .= $this->order($query->order);
+			$sql .= $this->order($query);
 
 		if ($query->limit > 0 || $query->offset > 0)
-			$sql .= $this->limit_offset($query->limit, $query->offset);
+			$sql .= $this->limit_offset($query);
 
 		return $sql;
 	}
@@ -103,13 +103,13 @@ class SQLDialect
 		$sql = 'UPDATE '.($query->use_prefix ? $this->db->prefix : '').$query->table.' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
-			$sql .= $this->where($query->where);
+			$sql .= $this->where($query);
 
 		if (!empty($query->order))
-			$sql .= $this->order($query->order);
+			$sql .= $this->order($query);
 
 		if ($query->limit > 0 || $query->offset > 0)
-			$sql .= $this->limit_offset($query->limit, $query->offset);
+			$sql .= $this->limit_offset($query);
 
 		return $sql;
 	}
@@ -122,13 +122,13 @@ class SQLDialect
 		$sql = 'DELETE FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table;
 
 		if (!empty($query->where))
-			$sql .= $this->where($query->where);
+			$sql .= $this->where($query);
 
 		if (!empty($query->order))
-			$sql .= $this->order($query->order);
+			$sql .= $this->order($query);
 
 		if ($query->limit > 0 || $query->offset > 0)
-			$sql .= $this->limit_offset($query->limit, $query->offset);
+			$sql .= $this->limit_offset($query);
 
 		return $sql;
 	}
@@ -197,13 +197,13 @@ class SQLDialect
 		return $name.' INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY';
 	}
 
-	protected function join($joins)
+	protected function join(SelectQuery $query)
 	{
 		$sql = '';
 
-		foreach ($joins as $join)
+		foreach ($query->joins as $join)
 		{
-			$sql .= ' '.$join->type.' '.$this->db->prefix.$join->table;
+			$sql .= ' '.$join->type.' '.($query->use_prefix ? $this->db->prefix : '').$join->table;
 			if (!empty($join->on))
 				$sql .= ' ON '.$this->conditions($join->on);
 		}
@@ -211,19 +211,19 @@ class SQLDialect
 		return $sql;
 	}
 
-	protected function where($where)
+	protected function where(DatabaseQuery $query)
 	{
-		return ' WHERE '.$this->conditions($where);
+		return ' WHERE '.$this->conditions($query->where);
 	}
 
-	protected function group($group)
+	protected function group(SelectQuery $query)
 	{
-		return ' GROUP BY '.implode(', ', $group);
+		return ' GROUP BY '.implode(', ', $query->group);
 	}
 
-	protected function having($having)
+	protected function having(SelectQuery $query)
 	{
-		return ' HAVING '.$this->conditions($having);
+		return ' HAVING '.$this->conditions($query->having);
 	}
 
 	protected function conditions($conditions)
@@ -231,14 +231,17 @@ class SQLDialect
 		return '('.$conditions.')';
 	}
 
-	protected function order($order)
+	protected function order(DatabaseQuery $query)
 	{
-		return ' ORDER BY '.implode(', ', $order);
+		return ' ORDER BY '.implode(', ', $query->order);
 	}
 
-	protected function limit_offset($limit, $offset)
+	protected function limit_offset(DatabaseQuery $query)
 	{
 		$sql = '';
+
+		$limit = $query->limit;
+		$offset = $query->offset;
 
 		if ($offset > 0 && $limit == 0)
 			$limit = PHP_INT_MAX;

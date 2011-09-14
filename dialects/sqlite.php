@@ -37,9 +37,12 @@ class SQLiteDialect extends SQLDialect
 		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
 	}
 
-	protected function limit_offset($limit, $offset)
+	protected function limit_offset(DatabaseQuery $query)
 	{
 		$sql = '';
+
+		$limit = $query->limit;
+		$offset = $query->offset;
 
 		if ($offset > 0 && $limit == 0)
 			$limit = -1;
