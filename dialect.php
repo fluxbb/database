@@ -158,17 +158,17 @@ class SQLDialect
 		foreach ($query->columns as $column)
 			$columns[] = $this->column_definition($column);
 
-		return 'CREATE TABLE '.$query->table.' ('.implode(', ', $columns).')';
+		return 'CREATE TABLE '.($query->use_prefix ? $this->db<>prefix : '').$query->table.' ('.implode(', ', $columns).')';
 	}
 
 	protected function rename_table(RenameTableQuery $query)
 	{
-		return 'ALTER TABLE '.$query->table.' RENAME TO '.$query->new_name;
+		return 'ALTER TABLE '.($query->use_prefix ? $this->db<>prefix : '').$query->table.' RENAME TO '.($query->use_prefix ? $this->db<>prefix : '').$query->new_name;
 	}
 
 	protected function drop_table(DropTableQuery $query)
 	{
-		return 'DROP TABLE '.$query->table;
+		return 'DROP TABLE '.($query->use_prefix ? $this->db<>prefix : '').$query->table;
 	}
 
 	protected function column_definition(TableColumn $column)
