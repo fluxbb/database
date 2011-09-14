@@ -29,7 +29,7 @@ class PgSQLDialect extends SQLDialect
 			$keys[] = $key.' = '.$value;
 		}
 
-		$sql = 'INTO INTO '.($query->use_prefix ? $this->db->prefix : '').$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table.' WHERE ('.implode(' AND ', $keys).'))';
+		$sql = 'INSERT INTO '.($query->use_prefix ? $this->db->prefix : '').$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.($query->use_prefix ? $this->db->prefix : '').$query->table.' WHERE ('.implode(' AND ', $keys).'))';
 	}
 
 	protected function truncate(TruncateQuery $query)
