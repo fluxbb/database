@@ -71,6 +71,12 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	{
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().'('.implode(',', $query->fields).')';
+		return $this->exec($sql);
+	}
+
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
 		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = \''.$query->getTable().'\' AND c2.relname = \''.$query->getTable().'_'.$query->index.'\'';
