@@ -32,7 +32,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function compileReplace(Flux_Database_Query_Replace $query)
 	{
-		if (empty($query->table))
+		if (empty($query->getTable()))
 			throw new Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
@@ -46,34 +46,40 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		}
 
 		// TODO: What if keys is just a string (like one query in include/functions.php)? This needs to be handled.
-		$sql = 'INSERT INTO '.$query->table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$query->table.' WHERE ('.implode(' AND ', $keys).'))';
+		$sql = 'INSERT INTO '.$query->getTable().' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$query->getTable().' WHERE ('.implode(' AND ', $keys).'))';
 		return $sql;
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
 	{
-		if (empty($query->table))
+		if (empty($query->getTable()))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$query->table.' RESTART IDENTITY';
+		$sql = 'TRUNCATE TABLE '.$query->getTable().' RESTART IDENTITY';
 		return $this->exec($sql);
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_class WHERE relname = \''.$query->table.'\'';
+		$sql = 'SELECT 1 FROM pg_class WHERE relname = \''.$query->getTable().'\'';
+		return (bool) $this->query($sql)->fetchColumn();
+	}
+
+	public function runFieldExists(Flux_Database_Query_FieldExists $query)
+	{
+		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = \''.$query->getTable().'\' AND a.attname = \''.$query->field.'\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = \''.$query->table.'\' AND c2.relname = \''.$query->table.'_'.$query->index.'\'';
+		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = \''.$query->getTable().'\' AND c2.relname = \''.$query->getTable().'_'.$query->index.'\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'DROP INDEX '.$query->table.'_'.$query->index;
+		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
 		return $this->exec($sql);
 	}
 

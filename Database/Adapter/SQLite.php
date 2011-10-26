@@ -29,32 +29,45 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
 	{
-		if (empty($query->table))
+		if (empty($query->getTable()))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		// Reset sequence counter
-		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($query->table).';';
-		$sql .= 'DELETE FROM '.$query->table;
+		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($query->getTable()).';';
+		$sql .= 'DELETE FROM '.$query->getTable();
 
 		return $this->prepare($sql);
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->table.'\' AND type=\'table\'';
+		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->getTable().'\' AND type=\'table\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->table.'_'.$query->index.'\' AND tbl_name = \''.$query->table.'\' AND type=\'index\'';
+		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->getTable().'_'.$query->index.'\' AND tbl_name = \''.$query->getTable().'\' AND type=\'index\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'DROP INDEX '.$query->table.'_'.$query->index;
+		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
 		return $this->exec($sql);
+	}
+
+	public function runFieldExists(Flux_Database_Query_FieldExists $query)
+	{
+		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			if ($row['name'] == $query->field)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
@@ -62,15 +75,15 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $this->runTableInfo($data);
 
 		$now = time();
-		$tmptable = str_replace('CREATE TABLE '.$query->table.' (', 'CREATE TABLE '.$query->table.'_t'.$now.' (', $table['sql']);
+		$tmptable = str_replace('CREATE TABLE '.$query->getTable().' (', 'CREATE TABLE '.$query->getTable().'_t'.$now.' (', $table['sql']);
 		$this->exec($tmptable);
 
-		$this->exec('INSERT INTO '.$query->table.'_t'.$now.' SELECT * FROM '.$query->table);
+		$this->exec('INSERT INTO '.$query->getTable().'_t'.$now.' SELECT * FROM '.$query->getTable());
 
 		unset($table['columns'][$query->field]);
 		$new_columns = array_keys($table['columns']);
 
-		$new_table = 'CREATE TABLE '.$query->table.' (';
+		$new_table = 'CREATE TABLE '.$query->getTable().' (';
 
 		foreach ($table['columns'] as $cur_column => $column_details)
 			$new_table .= "\n".$cur_column.' '.$column_details.',';
@@ -84,7 +97,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$new_table = trim($new_table, ',')."\n".');';
 
 		// Drop old table
-		$this->exec('DROP TABLE '.$query->table);
+		$this->exec('DROP TABLE '.$query->getTable());
 
 		// Create new table
 		$this->exec($new_table);
@@ -98,9 +111,9 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		}
 
 		// Copy content back
-		$this->exec('INSERT INTO '.$query->table.' SELECT '.implode(', ', $new_columns).' FROM '.$query->table.'_t'.$now);
+		$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
 
-		$this->exec('DROP TABLE '.$query->table.'_t'.$now);
+		$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
 
 		// TODO: Handle query errors
 		return true;
@@ -108,13 +121,13 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->table.'_'.$query->index.' ON '.$query->table.'('.implode(',', $query->fields).')';
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().'('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
-		$result = $this->query('SELECT sql FROM sqlite_master WHERE tbl_name = \''.$query->table.'\' ORDER BY type DESC');
+		$result = $this->query('SELECT sql FROM sqlite_master WHERE tbl_name = \''.$query->getTable().'\' ORDER BY type DESC');
 
 		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 		$num_rows = count($rows);
@@ -139,7 +152,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		}
 
 		// Work out the columns in the table currently
-		$result = $this->query('PRAGMA table_info('.$query->table.')');
+		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table['columns'][$row['name']] = $row;
