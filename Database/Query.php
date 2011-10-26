@@ -125,7 +125,6 @@ class Flux_Database_Query_Direct extends Flux_Database_Query
 class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 {
 	public $fields = array();
-	protected $table = '';
 	public $distinct = false;
 
 	public $group = array();
@@ -178,7 +177,6 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
 {
 	public $values;
-	protected $table;
 
 	public function compile()
 	{
@@ -205,7 +203,6 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
 {
 	// TODO: Sensible default values
 	public $values;
-	protected $table;
 
 	public $order = array();
 	public $where = '';
@@ -232,8 +229,6 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
  */
 class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
 {
-	protected $table;
-
 	public $order = array();
 	public $where = '';
 	public $limit = 0;
@@ -267,7 +262,6 @@ class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
 class Flux_Database_Query_Replace extends Flux_Database_Query_Multi
 {
 	public $values;
-	protected $table;
 	public $keys = array();
 
 	public function compile()
@@ -365,8 +359,6 @@ class Flux_Database_Query_Join_Left extends Flux_Database_Query_Join {
  */
 class Flux_Database_Query_Truncate extends Flux_Database_Query
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runTruncate($this);
@@ -375,8 +367,7 @@ class Flux_Database_Query_Truncate extends Flux_Database_Query
 
 class Flux_Database_Query_CreateTable extends Flux_Database_Query
 {
-	protected $table;
-	public $fields;
+	public $fields = array();
 
 	protected function _run(array $params = array())
 	{
@@ -394,7 +385,6 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 class Flux_Database_Query_RenameTable extends Flux_Database_Query
 {
-	protected $table;
 	public $new_name;
 
 	protected function _run(array $params = array())
@@ -405,8 +395,6 @@ class Flux_Database_Query_RenameTable extends Flux_Database_Query
 
 class Flux_Database_Query_DropTable extends Flux_Database_Query
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runDropTable($this);
@@ -415,8 +403,6 @@ class Flux_Database_Query_DropTable extends Flux_Database_Query
 
 class Flux_Database_Query_TableExists extends Flux_Database_Query
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runTableExists($this);
@@ -442,8 +428,6 @@ abstract class Flux_Database_Query_Field extends Flux_Database_Query
 
 class Flux_Database_Query_AddField extends Flux_Database_Query_Field
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runAddField($this);
@@ -452,8 +436,6 @@ class Flux_Database_Query_AddField extends Flux_Database_Query_Field
 
 class Flux_Database_Query_AlterField extends Flux_Database_Query_Field
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runAlterField($this);
@@ -462,7 +444,6 @@ class Flux_Database_Query_AlterField extends Flux_Database_Query_Field
 
 class Flux_Database_Query_DropField extends Flux_Database_Query
 {
-	protected $table;
 	public $field;
 
 	protected function _run(array $params = array())
@@ -473,7 +454,6 @@ class Flux_Database_Query_DropField extends Flux_Database_Query
 
 class Flux_Database_Query_FieldExists extends Flux_Database_Query
 {
-	protected $table;
 	public $field;
 
 	protected function _run(array $params = array())
@@ -484,7 +464,6 @@ class Flux_Database_Query_FieldExists extends Flux_Database_Query
 
 class Flux_Database_Query_AddIndex extends Flux_Database_Query
 {
-	protected $table;
 	public $index;
 	public $unique = false;
 	public $fields = array();
@@ -497,7 +476,6 @@ class Flux_Database_Query_AddIndex extends Flux_Database_Query
 
 class Flux_Database_Query_DropIndex extends Flux_Database_Query
 {
-	protected $table;
 	public $index;
 
 	protected function _run(array $params = array())
@@ -508,7 +486,6 @@ class Flux_Database_Query_DropIndex extends Flux_Database_Query
 
 class Flux_Database_Query_IndexExists extends Flux_Database_Query
 {
-	protected $table;
 	public $index;
 
 	protected function _run(array $params = array())
@@ -519,8 +496,6 @@ class Flux_Database_Query_IndexExists extends Flux_Database_Query
 
 class Flux_Database_Query_TableInfo extends Flux_Database_Query
 {
-	protected $table;
-
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runTableInfo($this);
