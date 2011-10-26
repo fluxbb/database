@@ -56,7 +56,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		$sql = 'TRUNCATE TABLE '.$query->table.' RESTART IDENTITY';
-		return $this->prepare($sql);
+		return $this->exec($sql);
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
@@ -74,7 +74,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
 		$sql = 'DROP INDEX '.$query->table.'_'.$query->index;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	protected function compileColumnSerial($name)

@@ -20,7 +20,11 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function setNames($charset)
 	{
-		return 'PRAGMA encoding = '.$this->quote($charset);
+		$sql = 'PRAGMA encoding = '.$this->quote($charset);
+		if ($this->exec($sql) === false)
+			return;
+
+		$this->charset = $charset;
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
@@ -50,7 +54,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
 		$sql = 'DROP INDEX '.$query->table.'_'.$query->index;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
@@ -59,9 +63,9 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 		$now = time();
 		$tmptable = str_replace('CREATE TABLE '.$query->table.' (', 'CREATE TABLE '.$query->table.'_t'.$now.' (', $table['sql']);
-		$this->query($tmptable);
+		$this->exec($tmptable);
 
-		$this->query('INSERT INTO '.$query->table.'_t'.$now.' SELECT * FROM '.$query->table);
+		$this->exec('INSERT INTO '.$query->table.'_t'.$now.' SELECT * FROM '.$query->table);
 
 		unset($table['columns'][$query->field]);
 		$new_columns = array_keys($table['columns']);
@@ -80,23 +84,23 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$new_table = trim($new_table, ',')."\n".');';
 
 		// Drop old table
-		$this->query('DROP TABLE '.$query->table);
+		$this->exec('DROP TABLE '.$query->table);
 
 		// Create new table
-		$this->query($new_table);
+		$this->exec($new_table);
 
 		// Recreate indexes
 		if (!empty($table['indices']))
 		{
 			foreach ($table['indices'] as $cur_index)
 				if (!preg_match('%\('.preg_quote($field_name, '%').'\)%', $cur_index))
-					$this->query($cur_index);
+					$this->exec($cur_index);
 		}
 
 		// Copy content back
-		$this->query('INSERT INTO '.$query->table.' SELECT '.implode(', ', $new_columns).' FROM '.$query->table.'_t'.$now);
+		$this->exec('INSERT INTO '.$query->table.' SELECT '.implode(', ', $new_columns).' FROM '.$query->table.'_t'.$now);
 
-		$this->query('DROP TABLE '.$query->table.'_t'.$now);
+		$this->exec('DROP TABLE '.$query->table.'_t'.$now);
 
 		// TODO: Handle query errors
 		return true;
@@ -105,7 +109,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->table.'_'.$query->index.' ON '.$query->table.'('.implode(',', $query->fields).')';
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)

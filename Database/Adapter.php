@@ -104,7 +104,7 @@ abstract class Flux_Database_Adapter
 	public function setNames($charset)
 	{
 		$sql = 'SET NAMES '.$this->quote($charset);
-		if ($this->pdo->exec($sql) === false)
+		if ($this->exec($sql) === false)
 			return;
 
 		$this->charset = $charset;
@@ -510,7 +510,7 @@ abstract class Flux_Database_Adapter
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		$sql = 'TRUNCATE TABLE '.$table;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
@@ -521,19 +521,19 @@ abstract class Flux_Database_Adapter
 			$fields[] = $this->compileColumnDefinition($field);
 
 		$sql = 'CREATE TABLE '.$query->getTable().' ('.implode(', ', $fields).')';
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runRenameTable(Flux_Database_Query_RenameTable $query)
 	{
 		$sql = 'ALTER TABLE '.$query->getTable().' RENAME TO '.$query->new_name;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runDropTable(Flux_Database_Query_DropTable $query)
 	{
 		$sql = 'DROP TABLE '.$query->getTable();
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
@@ -547,7 +547,7 @@ abstract class Flux_Database_Adapter
 		$field = $this->compileColumnDefinition($query->field);
 
 		$sql = 'ALTER TABLE '.$query->getTable().' ADD '.$field;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runAlterField(Flux_Database_Query_AlterField $query)
@@ -555,14 +555,14 @@ abstract class Flux_Database_Adapter
 		$field = $this->compileColumnDefinition($query->field);
 
 		$sql = 'ALTER TABLE '.$query->getTable().' MODIFY '.$query->field->name.' '.$field;
-		return $this->query($sql);
+		return $this->exec($sql);
 		// TODO: Fix return values (bool)!
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
 	{
 		$sql = 'ALTER TABLE '.$query->getTable().' DROP '.$query->field;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
@@ -574,13 +574,13 @@ abstract class Flux_Database_Adapter
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
 		$sql = 'ALTER TABLE '.$query->getTable().' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ('.implode(',', $query->fields).')';
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
 		$sql = 'ALTER TABLE '.$query->getTable().' DROP INDEX '.$query->getTable().'_'.$query->index;
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
