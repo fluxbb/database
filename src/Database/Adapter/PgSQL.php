@@ -67,16 +67,18 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runAlterField(Flux_Database_Query_AlterField $query)
 	{
+		$now = time();
+
 		// Add a temporary field with new constraints and old values instead of the new one
 		$subquery = $this->addField($query->getTable());
 		$new_field = clone $query->field;
-		$new_field->name = 'tmp_'.$new_field->name;
+		$new_field->name = $new_field->name.'_t'.$now;
 		$subquery->field = $new_field;
 		$subquery->run();
 
-		$this->exec('UPDATE '.$query->getTable().' SET tmp_'.$query->field->name.' = '.$query->field->name);
+		$this->exec('UPDATE '.$query->getTable().' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
 		$this->dropField($query->getTable(), $query->field->name)->run();
-		$this->exec('ALTER TABLE '.$query->getTable().' RENAME COLUMN tmp_'.$query->field->name.' TO '.$query->field->name);
+		$this->exec('ALTER TABLE '.$query->getTable().' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 
 		return true;
 	}
