@@ -456,7 +456,7 @@ abstract class Flux_Database_Adapter
 		foreach ($query->values as $key => $value)
 			$updates[] = $key.' = '.$value;
 
-		$sql = 'UPDATE '.$query->table.' SET '.implode(', ', $updates);
+		$sql = 'UPDATE '.$query->getTable().' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
 			$sql .= $this->compileWhere($query->where);
