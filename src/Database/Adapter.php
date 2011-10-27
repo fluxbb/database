@@ -546,7 +546,7 @@ abstract class Flux_Database_Adapter
 	{
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$query->getTable().' ADD '.$field;
+		$sql = 'ALTER TABLE '.$query->getTable().' ADD COLUMN '.$field;
 		return $this->exec($sql);
 	}
 
@@ -607,6 +607,8 @@ abstract class Flux_Database_Adapter
 		if (!empty($column->key))
 			$sql .= ' '.$column->key;
 
+		// TODO: allow_null?
+		// TODO: do we need another default value if allow_null is true?
 		return $sql;
 	}
 

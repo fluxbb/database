@@ -65,30 +65,6 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runAddField(Flux_Database_Query_AddField $query)
-	{
-		$field_type = preg_replace(array_keys($this->datatype_transformations), array_values($this->datatype_transformations), $field_type);
-
-		$this->exec('ALTER TABLE '.$query->getTable().' ADD '.$query->field->name.' '.$field_type);
-
-		$default_value = $query->field->default;
-		if ($default_value !== null)
-		{
-			if (!is_int($default_value) && !is_float($default_value))
-				$default_value = '\''.$this->escape($default_value).'\'';
-
-			$this->exec('ALTER TABLE '.$query->getTable().' ALTER '.$query->field->name.' SET DEFAULT '.$default_value);
-			$this->exec('UPDATE '.$query->getTable().' SET '.$query->field->name.'='.$default_value);
-		}
-
-		// FIXME: allow null or can we just check that the default value is not null?
-		if (!$query->field->allow_null)
-			$this->exec('ALTER TABLE '.$query->getTable().' ALTER '.$query->field->name.' SET NOT NULL');
-
-		// TODO: Return type!?
-		return true;
-	}
-
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
 		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = \''.$query->getTable().'\' AND a.attname = \''.$query->field.'\'';
