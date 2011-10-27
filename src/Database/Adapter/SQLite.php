@@ -57,6 +57,12 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return $this->exec($sql);
 	}
 
+	public function runAlterField(Flux_Database_Query_AlterField $query)
+	{
+		// SQLite does not need to change the type of the column, as long as the values are according to the type
+		return true;
+	}
+
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
 		$result = $this->query('PRAGMA table_info('.$query->getTable().')');

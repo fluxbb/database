@@ -65,6 +65,22 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	public function runAlterField(Flux_Database_Query_AlterField $query)
+	{
+		// Add a temporary field with new constraints and old values instead of the new one
+		$subquery = $this->addField($query->getTable());
+		$new_field = clone $query->field;
+		$new_field->name = 'tmp_'.$new_field->name;
+		$subquery->field = $new_field;
+		$subquery->run();
+
+		$this->exec('UPDATE '.$query->getTable().' SET tmp_'.$query->field->name.' = '.$query->field->name);
+		$this->dropField($query->getTable(), $query->field->name)->run();
+		$this->exec('ALTER TABLE '.$query->getTable().' RENAME COLUMN tmp_'.$query->field->name.' TO '.$query->field->name);
+
+		return true;
+	}
+
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
 		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = \''.$query->getTable().'\' AND a.attname = \''.$query->field.'\'';
