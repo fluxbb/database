@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__FILE__).'/../../../Database/Adapter.php';
+require_once dirname(__FILE__).'/../../../src/Database/Adapter.php';
 
 class Flux_Database_Adapter_SQLiteTestCase extends Flux_Database_AdapterTestCase
 {

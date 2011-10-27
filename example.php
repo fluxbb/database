@@ -1,6 +1,6 @@
 <?php
-include 'Database/Adapter.php';
-include 'Database/Query.php';
+include 'src/Database/Adapter.php';
+include 'src/Database/Query.php';
 
 $db = Flux_Database_Adapter::factory('MySQL', array('dbname' => 'flux_db', 'username' => 'root', 'password' => '', 'prefix' => 'forum_', 'debug' => true));
 
