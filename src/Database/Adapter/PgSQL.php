@@ -107,6 +107,49 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return $this->exec($sql);
 	}
 
+	public function runTableInfo(Flux_Database_Query_TableInfo $query)
+	{
+		$table = array(
+			'columns'		=> array(),
+			'primary_key'	=> '',
+			'indices'		=> array(),
+		);
+
+		// Fetch column information
+		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = \''.$query->getTable().'\' AND table_schema = \''.$this->options['dbname'].'\' ORDER BY ordinal_position ASC';
+		$result = $this->query($sql);
+
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			$table['columns'][$row['column_name']] = array(
+				'type'			=> $row['column_type'],
+				'default'		=> $row['column_default'],
+				'allow_null'	=> $row['is_nullable'] == 'YES',
+			);
+
+			if ($row['column_key'] == 'PRI')
+			{
+				$table['primary_key'] = $row['column_name'];
+			}
+		}
+
+		// Fetch index information
+		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = \''.$query->getTable().'\' ORDER BY t.relname, i.relname';
+		$result = $this->query($sql);
+
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			if (!isset($table['indices'][$row['index_name']]))
+			{
+				$table['indices'][$row['index_name']] = array(
+					'fields'	=> array(),
+					'unique'	=> $row['indisunique'],
+				);
+			}
+			$table['indices'][$row['index_name']]['fields'][] = $row['column_name'];
+		}
+	}
+
 	protected function compileColumnSerial($name)
 	{
 		return $name.' SERIAL NOT NULL PRIMARY KEY';

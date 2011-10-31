@@ -156,38 +156,50 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
-		$result = $this->query('SELECT sql FROM sqlite_master WHERE tbl_name = \''.$query->getTable().'\' ORDER BY type DESC');
-
-		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
-		$num_rows = count($rows);
-
-		if ($num_rows == 0)
-			return;
-
 		$table = array(
-			'indices'	=> array(),
-			'sql'		=> '',
-			'columns'	=> array(),
+			'columns'		=> array(),
+			'primary_key'	=> '',
+			'indices'		=> array(),
 		);
-		foreach ($rows as $cur_index)
-		{
-			if (empty($cur_index['sql']))
-				continue;
 
-			if (empty($table['sql']))
-				$table['sql'] = $cur_index['sql'];
-			else
-				$table['indices'][] = $cur_index['sql'];
-		}
-
-		// Work out the columns in the table currently
+		// Work out the columns in the table
 		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
-			$table['columns'][$row['name']] = $row;
+			$table['columns'][$row['name']] = array(
+				'type'			=> $row['type'],
+				'default'		=> $row['dflt_value'],
+				'allow_null'	=> $row['notnull'] == 0,
+			);
+
+			if ($row['pk'] == 1)
+			{
+				$table['primary_key'] = $row['name'];
+			}
 		}
 
-		// TODO: Primary key etc.
+		$result = $this->query('PRAGMA index_list('.$query->getTable().')');
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $cur_index)
+		{
+			// Ignore automatically-generated indices (like primary keys)
+			if (substr($cur_index['name'], 0, 17) == 'sqlite_autoindex_')
+			{
+				continue;
+			}
+
+			$r2 = $this->query('PRAGMA index_info('.$cur_index['name'].')');
+
+			$table['indices'][$cur_index['name']] = array(
+				'fields'	=> array(),
+				'unique'	=> $cur_index['unique'] != 0,
+			);
+
+			foreach ($r2->fetchAll(PDO::FETCH_ASSOC) as $row)
+			{
+				$table['indices'][$cur_index['name']]['fields'][] = $row['name'];
+			}
+		}
+
 		return $table;
 	}
 

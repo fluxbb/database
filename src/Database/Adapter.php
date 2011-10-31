@@ -591,7 +591,50 @@ abstract class Flux_Database_Adapter
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
-		// TODO!
+		$table = array(
+			'columns'		=> array(),
+			'primary_key'	=> '',
+			'indices'		=> array(),
+		);
+
+		// Fetch column information
+		$result = $this->query('DESCRIBE '.$query->getTable());
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			$table['columns'][$row['Field']] = array(
+				'type'			=> $row['Type'],
+				'default'		=> $row['Default'],
+				'allow_null'	=> $row['Null'] == 'YES',
+			);
+
+			// Save primary key
+			if ($row['Key'] == 'PRI')
+			{
+				$table['primary_key'] = $row['Field'];
+			}
+		}
+
+		// Fetch all indices
+		$result = $this->query('SHOW INDEXES FROM '.$query->getTable());
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			if ($row['Key_name'] == 'PRIMARY')
+			{
+				$table['primary_key'] = $row['Column_name'];
+				continue;
+			}
+
+			if (!isset($table['indices'][$row['Key_name']]))
+			{
+				$table['indices'][$row['Key_name']] = array(
+					'fields'	=> array(),
+					'unique'	=> $row['Non_unique'] != 1,
+				);
+			}
+			$table['indices'][$row['Key_name']]['fields'][] = $row['Column_name'];
+		}
+
+		return $table;
 	}
 
 	protected function compileColumnDefinition(Flux_Database_Query_Helper_TableColumn $column)
