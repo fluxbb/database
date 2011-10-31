@@ -39,8 +39,8 @@ abstract class Flux_Database_Query
 
 	public function run(array $params = array())
 	{
-		// This query type does not support multiple executions
-		if ($this->run)
+		// This query type does not support multiple executions with different parameters
+		if ($this->run && !empty($params))
 		{
 			throw new Exception('This query type does not support multiple executions with different parameter sets.');
 		}
