@@ -45,6 +45,12 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	{
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().' ('.implode(',', $query->fields).')';
+		return $this->exec($sql);
+	}
+
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
 		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->getTable().'_'.$query->index.'\' AND tbl_name = \''.$query->getTable().'\' AND type=\'index\'';
