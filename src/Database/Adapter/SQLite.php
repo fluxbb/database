@@ -84,42 +84,59 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runDropField(Flux_Database_Query_DropField $query)
 	{
-		$table = $this->runTableInfo($data);
+		// Fetch table SQL
+		$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = \''.$query->getTable().'\'');
 
+		$table_sql = $result->fetchColumn();
+		if ($table_sql == NULL)
+		{
+			return false;
+		}
+
+		// Create temporary table
 		$now = time();
-		$tmptable = str_replace('CREATE TABLE '.$query->getTable().' (', 'CREATE TABLE '.$query->getTable().'_t'.$now.' (', $table['sql']);
-		$this->exec($tmptable);
+		$tmptable_sql = str_replace('CREATE TABLE '.$query->getTable().' (', 'CREATE TABLE '.$query->getTable().'_t'.$now.' (', $table_sql);
+		$this->exec($tmptable_sql);
 
 		$this->exec('INSERT INTO '.$query->getTable().'_t'.$now.' SELECT * FROM '.$query->getTable());
+
+		$table = $this->tableInfo($query->getTable())->run();
 
 		unset($table['columns'][$query->field]);
 		$new_columns = array_keys($table['columns']);
 
-		$new_table = 'CREATE TABLE '.$query->getTable().' (';
+		$new_sql = 'CREATE TABLE '.$query->getTable().' (';
 
-		foreach ($table['columns'] as $cur_column => $column_details)
-			$new_table .= "\n".$cur_column.' '.$column_details.',';
+		foreach ($table['columns'] as $cur_column => $column)
+		{
+			$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
+		}
 
+		// TODO!
 		if (isset($table['unique']))
-			$new_table .= "\n".$table['unique'].',';
+			$new_sql .= "\n".$table['unique'].',';
 
-		if (isset($table['primary_key']))
-			$new_table .= "\n".$table['primary_key'].',';
+		if (!empty($table['primary_key']))
+			$new_sql .= "\n".'PRIMARY KEY ('.$table['primary_key'].'),';
 
-		$new_table = trim($new_table, ',')."\n".');';
+		$new_sql = trim($new_sql, ',')."\n".');';
 
 		// Drop old table
 		$this->exec('DROP TABLE '.$query->getTable());
 
 		// Create new table
-		$this->exec($new_table);
+		$this->exec($new_sql);
 
 		// Recreate indexes
 		if (!empty($table['indices']))
 		{
-			foreach ($table['indices'] as $cur_index)
-				if (!preg_match('%\('.preg_quote($field_name, '%').'\)%', $cur_index))
-					$this->exec($cur_index);
+			foreach ($table_indices as $index_name => $cur_index)
+			{
+				if (!in_array($query->field, $cur_index['fields']))
+				{
+					$this->dropIndex($query->getTable(), $index_name)->run();
+				}
+			}
 		}
 
 		// Copy content back
