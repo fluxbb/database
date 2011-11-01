@@ -594,6 +594,7 @@ abstract class Flux_Database_Adapter
 		$table = array(
 			'columns'		=> array(),
 			'primary_key'	=> '',
+			'unique'		=> array(),
 			'indices'		=> array(),
 		);
 
@@ -630,7 +631,17 @@ abstract class Flux_Database_Adapter
 					'fields'	=> array(),
 					'unique'	=> $row['Non_unique'] != 1,
 				);
+
+				if ($row['Non_unique'] != 1)
+				{
+					$table['unique'][] = array($row['Column_name']);
+				}
 			}
+			else
+			{
+				$table['unique'][count($table['unique']) - 1][] = $row['Column_name'];
+			}
+
 			$table['indices'][$row['Key_name']]['fields'][] = $row['Column_name'];
 		}
 

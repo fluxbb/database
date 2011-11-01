@@ -159,6 +159,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = array(
 			'columns'		=> array(),
 			'primary_key'	=> '',
+			'unique'		=> array(),
 			'indices'		=> array(),
 		);
 
@@ -194,8 +195,19 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				'unique'	=> $cur_index['unique'] != 0,
 			);
 
+			if ($cur_index['unique'] != 0)
+			{
+				$table['unique'][] = array();
+				$k = count($table) - 1;
+			}
+
 			foreach ($r2->fetchAll(PDO::FETCH_ASSOC) as $row)
 			{
+				if ($cur_index['unique'] != 0)
+				{
+					$table['unique'][$k][] = $row['name'];
+				}
+
 				$table['indices'][$cur_index['name']]['fields'][] = $row['name'];
 			}
 		}

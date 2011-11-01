@@ -112,6 +112,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$table = array(
 			'columns'		=> array(),
 			'primary_key'	=> '',
+			'unique'		=> '',
 			'indices'		=> array(),
 		);
 
@@ -145,7 +146,18 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 					'fields'	=> array(),
 					'unique'	=> $row['indisunique'],
 				);
+
+				if ($row['indisunique'])
+				{
+					$table['unique'][] = $row['column_name'];
+				}
 			}
+			else
+			{
+				// TODO: multiple primary keys?
+				$table['unique'][count($table['unique']) - 1][] = $row['column_name'];
+			}
+
 			$table['indices'][$row['index_name']]['fields'][] = $row['column_name'];
 		}
 	}
