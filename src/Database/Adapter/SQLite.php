@@ -41,7 +41,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->getTable().'\' AND type=\'table\'';
+		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($query->getTable()).' AND type=\'table\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -53,7 +53,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SELECT 1 FROM sqlite_master WHERE name = \''.$query->getTable().'_'.$query->index.'\' AND tbl_name = \''.$query->getTable().'\' AND type=\'index\'';
+		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($query->getTable().'_'.$query->index).' AND tbl_name = '.$this->quote($query->getTable()).' AND type=\'index\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -85,7 +85,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 	public function runDropField(Flux_Database_Query_DropField $query)
 	{
 		// Fetch table SQL
-		$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = \''.$query->getTable().'\'');
+		$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = '.$this->quote($query->getTable()));
 
 		$table_sql = $result->fetchColumn();
 		if ($table_sql == NULL)

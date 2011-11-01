@@ -538,7 +538,7 @@ abstract class Flux_Database_Adapter
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SHOW TABLES LIKE \''.$query->getTable().'\'';
+		$sql = 'SHOW TABLES LIKE '.$this->quote($query->getTable());
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -567,7 +567,7 @@ abstract class Flux_Database_Adapter
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$sql = 'SHOW COLUMNS FROM '.$query->getTable().' LIKE \''.$query->field.'\'';
+		$sql = 'SHOW COLUMNS FROM '.$query->getTable().' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 

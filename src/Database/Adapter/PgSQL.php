@@ -61,7 +61,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_class WHERE relname = \''.$query->getTable().'\'';
+		$sql = 'SELECT 1 FROM pg_class WHERE relname = '.$this->quote($query->getTable());
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -85,7 +85,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = \''.$query->getTable().'\' AND a.attname = \''.$query->field.'\'';
+		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = '.$this->quote($query->getTable()).' AND a.attname = '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -97,7 +97,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = \''.$query->getTable().'\' AND c2.relname = \''.$query->getTable().'_'.$query->index.'\'';
+		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($query->getTable()).' AND c2.relname = '.$this->quote($query->getTable().'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -116,7 +116,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		);
 
 		// Fetch column information
-		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = \''.$query->getTable().'\' AND table_schema = \''.$this->options['dbname'].'\' ORDER BY ordinal_position ASC';
+		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = '.$this->quote($query->getTable()).' AND table_schema = '.$this->quote($this->options['dbname']).' ORDER BY ordinal_position ASC';
 		$result = $this->query($sql);
 
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
@@ -134,7 +134,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		}
 
 		// Fetch index information
-		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = \''.$query->getTable().'\' ORDER BY t.relname, i.relname';
+		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = '.$this->quote($query->getTable()).' ORDER BY t.relname, i.relname';
 		$result = $this->query($sql);
 
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
