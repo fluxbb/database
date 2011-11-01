@@ -143,7 +143,7 @@ abstract class Flux_Database_Adapter
 	{
 		$quoted_str = $this->getPDO()->quote($str);
 		if ($quoted_str === false)
-			$quoted_str = '\''.$str.'\'';
+			$quoted_str = '\''.addslashes($str).'\'';
 
 		return $quoted_str;
 	}
