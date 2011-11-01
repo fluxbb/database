@@ -32,7 +32,8 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function compileReplace(Flux_Database_Query_Replace $query)
 	{
-		if (empty($query->getTable()))
+		$table = $query->getTable();
+		if (empty($table))
 			throw new Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
@@ -46,16 +47,17 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		}
 
 		// TODO: What if keys is just a string (like one query in include/functions.php)? This needs to be handled.
-		$sql = 'INSERT INTO '.$query->getTable().' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$query->getTable().' WHERE ('.implode(' AND ', $keys).'))';
+		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
 		return $sql;
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
 	{
-		if (empty($query->getTable()))
+		$table = $query->getTable();
+		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$query->getTable().' RESTART IDENTITY';
+		$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
 		return $this->exec($sql);
 	}
 

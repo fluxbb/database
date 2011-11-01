@@ -29,12 +29,13 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
 	{
-		if (empty($query->getTable()))
+		$table = $query->getTable();
+		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		// Reset sequence counter
-		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($query->getTable()).';';
-		$sql .= 'DELETE FROM '.$query->getTable();
+		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($query->table).';';
+		$sql .= 'DELETE FROM '.$table;
 
 		return $this->prepare($sql);
 	}
