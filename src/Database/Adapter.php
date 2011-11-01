@@ -59,13 +59,20 @@ abstract class Flux_Database_Adapter
 		{
 			$this->prefix = $this->options['prefix'];
 		}
-
-		$dsn = $this->generateDsn();
-
-		$this->connect($dsn);
 	}
 
 	abstract public function generateDsn();
+
+	protected function getPDO()
+	{
+		// Connect if we haven't yet
+		if ($this->pdo == NULL)
+		{
+			$this->connect($this->generateDsn());
+		}
+
+		return $this->pdo;
+	}
 
 	/**
 	 * Connect to the requested database via PDO.
@@ -134,7 +141,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function quote($str)
 	{
-		$quoted_str = $this->pdo->quote($str);
+		$quoted_str = $this->getPDO()->quote($str);
 		if ($quoted_str === false)
 			$quoted_str = '\''.$str.'\'';
 
@@ -194,12 +201,12 @@ abstract class Flux_Database_Adapter
 		if ($h['statement'] == NULL)
 		{
 			$h['had_arrays'] = $this->handleArrays($sql, $params);
-			$h['statement'] = $this->pdo->prepare($sql);
+			$h['statement'] = $this->getPDO()->prepare($sql);
 		}
 		else if ($h['had_arrays'])
 		{
 			$this->handleArrays($sql, $params);
-			$h['statement'] = $this->pdo->prepare($sql);
+			$h['statement'] = $this->getPDO()->prepare($sql);
 		}
 
 		return $h['statement'];
@@ -269,11 +276,11 @@ abstract class Flux_Database_Adapter
 		// TODO: Handle errors
 		if (empty($params))
 		{
-			$result = $this->pdo->query($sql);
+			$result = $this->getPDO()->query($sql);
 		}
 		else
 		{
-			$result = $this->pdo->prepare($sql);
+			$result = $this->getPDO()->prepare($sql);
 			$result->execute($params);
 		}
 
@@ -288,7 +295,7 @@ abstract class Flux_Database_Adapter
 		// Note the start time
 		$query_start = microtime(true);
 
-		$result = $this->pdo->exec($sql);
+		$result = $this->getPDO()->exec($sql);
 
 		// Note this query and how long it took
 		$this->queries[] = array('sql' => $sql, 'params' => array(), 'duration' => (microtime(true) - $query_start));
@@ -305,7 +312,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function insertId()
 	{
-		return $this->pdo->lastInsertId();
+		return $this->getPDO()->lastInsertId();
 	}
 
 	/**
@@ -319,7 +326,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function startTransaction()
 	{
-		return $this->pdo->beginTransaction();
+		return $this->getPDO()->beginTransaction();
 	}
 
 	/**
@@ -331,7 +338,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function commitTransaction()
 	{
-		return $this->pdo->commit();
+		return $this->getPDO()->commit();
 	}
 
 	/**
@@ -345,7 +352,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function rollbackTransaction()
 	{
-		return $this->pdo->rollBack();
+		return $this->getPDO()->rollBack();
 	}
 
 	/**
@@ -356,7 +363,7 @@ abstract class Flux_Database_Adapter
 	 */
 	public function inTransaction()
 	{
-		return $this->pdo->inTransaction();
+		return $this->getPDO()->inTransaction();
 	}
 
 	/**
@@ -381,8 +388,8 @@ abstract class Flux_Database_Adapter
 	{
 		$client = $server = '?';
 
-		try { $client = $this->pdo->getAttribute(PDO::ATTR_CLIENT_VERSION); } catch (PDOException $e) {}
-		try { $server = $this->pdo->getAttribute(PDO::ATTR_SERVER_VERSION); } catch (PDOException $e) {}
+		try { $client = $this->getPDO()->getAttribute(PDO::ATTR_CLIENT_VERSION); } catch (PDOException $e) {}
+		try { $server = $this->getPDO()->getAttribute(PDO::ATTR_SERVER_VERSION); } catch (PDOException $e) {}
 
 		return sprintf('%s %s/%s',
 			$this->type,
