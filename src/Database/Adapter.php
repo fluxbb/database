@@ -598,7 +598,7 @@ abstract class Flux_Database_Adapter
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SHOW INDEX FROM '.$this->quoteTable($query->getTable());
+		$sql = 'SHOW INDEX FROM '.$this->quoteTable($query->getTable()).' WHERE Key_name = '.$this->quote($query->getTable().'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
