@@ -53,6 +53,39 @@ abstract class Flux_Database_Adapter
 		}
 	}
 
+	/**
+	 * Get a list of all available database drivers
+	 *
+	 * @return array
+	 */
+	public static function getDriverList()
+	{
+		$return = array();
+		$pdo_drivers = PDO::getAvailableDrivers();
+		foreach (glob(dirname(__FILE__).'/*.php', GLOB_ONLYDIR) as $file)
+		{
+			$name = substr(end(explode('/', $file)), 0, -4);
+
+			if (in_array(strtolower($name), $pdo_drivers))
+			{
+				$return[] = $name;
+			}
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Check whether the given database driver is available
+	 *
+	 * @param string $driver
+	 * @return bool
+	 */
+	public static function driverExists($driver)
+	{
+		return in_array($driver, self::getDriverList());
+	}
+
 	public function __construct($options = array())
 	{
 		$this->options = $options;
