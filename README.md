@@ -18,4 +18,4 @@ Abstraction can be split into 2 different types - driver abstraction, and SQL sy
 [LGPL - GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl.html)
 
 ## Documentation
-[API and use](http://fluxbb.org/docs/modules/database)
+[API and use](http://fluxbb.org/docs/v2.0/modules/database)
