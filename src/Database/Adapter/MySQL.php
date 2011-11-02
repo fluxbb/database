@@ -43,6 +43,16 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		return 'mysql:'.implode(';', $args);
 	}
 
+	public function quoteTable($str)
+	{
+		return '`'.str_replace('`', '``', $str).'`';
+	}
+
+	public function quoteColumn($str)
+	{
+		return '`'.str_replace(array('`', '.'), array('``', '`.`'), $str);
+	}
+
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
 	{
 		$sql = parent::runCreateTable($query);

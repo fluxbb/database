@@ -148,6 +148,10 @@ abstract class Flux_Database_Adapter
 		return $quoted_str;
 	}
 
+	abstract public function quoteTable($str);
+
+	abstract public function quoteColumn($str);
+
 	public function prepare($sql)
 	{
 		$handle = $this->curHandle++;

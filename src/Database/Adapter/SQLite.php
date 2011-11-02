@@ -18,6 +18,16 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return 'sqlite:'.$this->options['file'];
 	}
 
+	public function quoteTable($str)
+	{
+		return '"'.str_replace('"', '""', $str).'"';
+	}
+
+	public function quoteColumn($str)
+	{
+		return '"'.str_replace('"', '""', $str).'"';
+	}
+
 	public function setNames($charset)
 	{
 		$sql = 'PRAGMA encoding = '.$this->quote($charset);
