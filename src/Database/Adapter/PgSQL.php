@@ -30,6 +30,16 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return 'pgsql:'.implode(';', $args);
 	}
 
+	public function quoteTable($str)
+	{
+		return '"'.str_replace('"', '""', $str).'"';
+	}
+
+	public function quoteColumn($str)
+	{
+		return '"'.str_replace('"', '""', $str).'"';
+	}
+
 	public function compileReplace(Flux_Database_Query_Replace $query)
 	{
 		$table = $query->getTable();
