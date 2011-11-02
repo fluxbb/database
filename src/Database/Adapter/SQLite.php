@@ -44,7 +44,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
 		// Reset sequence counter
-		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($query->table).';';
+		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
 		$sql .= 'DELETE FROM '.$table;
 
 		return $this->prepare($sql);
