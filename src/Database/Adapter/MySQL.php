@@ -45,7 +45,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 
 	public function quoteTable($str)
 	{
-		return '`'.str_replace(array('`', '.'), array('``', '`.`'), $str);
+		return '`'.str_replace(array('`', '.'), array('``', '`.`'), $str).'`';
 	}
 
 	public function quoteColumn($str)
