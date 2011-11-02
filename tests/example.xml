@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit>
+    <php>
+        <var name="DB_MYSQL_DBNAME" value="fluxbb__test" />
+        <var name="DB_MYSQL_HOST" value="localhost" />
+        <var name="DB_MYSQL_USER" value="root" />
+        <var name="DB_MYSQL_PASSWD" value="" />
+        <var name="DB_SQLITE_FILE" value=":memory:" />
+        <var name="DB_PGSQL_DBNAME" value="fluxbb__test" />
+        <var name="DB_PGSQL_HOST" value="localhost" />
+        <var name="DB_PGSQL_USER" value="root" />
+        <var name="DB_PGSQL_PASSWD" value="" />
+    </php>
+</phpunit>
