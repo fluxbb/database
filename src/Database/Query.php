@@ -100,7 +100,7 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
  */
 class Flux_Database_Query_Direct extends Flux_Database_Query
 {
-	public $sql = NULL;
+	public $sql = '';
 
 	protected function _run(array $params = array())
 	{
@@ -176,7 +176,7 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
  */
 class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
 {
-	public $values;
+	public $values = array();
 
 	public function compile()
 	{
@@ -201,8 +201,7 @@ class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
  */
 class Flux_Database_Query_Update extends Flux_Database_Query_Multi
 {
-	// TODO: Sensible default values
-	public $values;
+	public $values = array();
 
 	public $order = array();
 	public $where = '';
@@ -261,7 +260,7 @@ class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
  */
 class Flux_Database_Query_Replace extends Flux_Database_Query_Multi
 {
-	public $values;
+	public $values = array();
 	public $keys = array();
 
 	public function compile()
@@ -296,17 +295,15 @@ class Flux_Database_Query_Replace extends Flux_Database_Query_Multi
 abstract class Flux_Database_Query_Join
 {
 	protected $query = null;
-	public $type;
-	protected $table;
-	public $on;
+	public $type = '';
+	protected $table = '';
+	public $on = '';
 
 	public function __construct(Flux_Database_Query_Select $query, $type, $table)
 	{
 		$this->query = $query;
 		$this->type = $type;
 		$this->table = $table;
-
-		$this->on = '';
 	}
 
 	public function setTable($table)
@@ -385,7 +382,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 class Flux_Database_Query_RenameTable extends Flux_Database_Query
 {
-	public $new_name;
+	public $new_name = '';
 
 	protected function _run(array $params = array())
 	{
@@ -444,7 +441,7 @@ class Flux_Database_Query_AlterField extends Flux_Database_Query_Field
 
 class Flux_Database_Query_DropField extends Flux_Database_Query
 {
-	public $field;
+	public $field = '';
 
 	protected function _run(array $params = array())
 	{
@@ -454,7 +451,7 @@ class Flux_Database_Query_DropField extends Flux_Database_Query
 
 class Flux_Database_Query_FieldExists extends Flux_Database_Query
 {
-	public $field;
+	public $field = '';
 
 	protected function _run(array $params = array())
 	{
@@ -464,7 +461,7 @@ class Flux_Database_Query_FieldExists extends Flux_Database_Query
 
 class Flux_Database_Query_AddIndex extends Flux_Database_Query
 {
-	public $index;
+	public $index = '';
 	public $unique = false;
 	public $fields = array();
 
@@ -476,7 +473,7 @@ class Flux_Database_Query_AddIndex extends Flux_Database_Query
 
 class Flux_Database_Query_DropIndex extends Flux_Database_Query
 {
-	public $index;
+	public $index = '';
 
 	protected function _run(array $params = array())
 	{
@@ -486,7 +483,7 @@ class Flux_Database_Query_DropIndex extends Flux_Database_Query
 
 class Flux_Database_Query_IndexExists extends Flux_Database_Query
 {
-	public $index;
+	public $index = '';
 
 	protected function _run(array $params = array())
 	{
