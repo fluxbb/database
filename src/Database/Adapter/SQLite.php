@@ -18,16 +18,6 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return 'sqlite:'.$this->options['file'];
 	}
 
-	public function quoteTable($str)
-	{
-		return '"'.str_replace('"', '""', $str).'"';
-	}
-
-	public function quoteColumn($str)
-	{
-		return '"'.str_replace('"', '""', $str).'"';
-	}
-
 	public function setNames($charset)
 	{
 		$sql = 'PRAGMA encoding = '.$this->quote($charset);
@@ -45,7 +35,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 		// Reset sequence counter
 		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
-		$sql .= 'DELETE FROM '.$this->quoteTable($table);
+		$sql .= 'DELETE FROM '.$table;
 
 		return $this->exec($sql);
 	}
@@ -64,7 +54,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'DROP INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index);
+		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
 		return $this->exec($sql);
 	}
 
@@ -76,7 +66,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$result = $this->query('PRAGMA table_info('.$this->quoteTable($query->getTable()).')');
+		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			if ($row['name'] == $query->field)
@@ -104,18 +94,18 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$tmptable_sql = str_replace('CREATE TABLE '.$query->getTable().' (', 'CREATE TABLE '.$query->getTable().'_t'.$now.' (', $table_sql);
 		$this->exec($tmptable_sql);
 
-		$this->exec('INSERT INTO '.$this->quoteTable($query->getTable().'_t'.$now).' SELECT * FROM '.$this->quoteTable($query->getTable()));
+		$this->exec('INSERT INTO '.$query->getTable().'_t'.$now.' SELECT * FROM '.$query->getTable());
 
 		$table = $this->tableInfo($query->getTable())->run();
 
 		unset($table['columns'][$query->field]);
 		$new_columns = array_keys($table['columns']);
 
-		$new_sql = 'CREATE TABLE '.$this->quoteTable($query->getTable()).' (';
+		$new_sql = 'CREATE TABLE '.$query->getTable().' (';
 
 		foreach ($table['columns'] as $cur_column => $column)
 		{
-			$new_sql .= "\n".$this->quoteColumn($cur_column).' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
+			$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
 		}
 
 		// TODO!
@@ -123,12 +113,12 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			$new_sql .= "\n".$table['unique'].',';
 
 		if (!empty($table['primary_key']))
-			$new_sql .= "\n".'PRIMARY KEY ('.$this->quoteColumn($table['primary_key']).'),';
+			$new_sql .= "\n".'PRIMARY KEY ('.$table['primary_key'].'),';
 
 		$new_sql = trim($new_sql, ',')."\n".');';
 
 		// Drop old table
-		$this->exec('DROP TABLE '.$this->quoteTable($query->getTable()));
+		$this->exec('DROP TABLE '.$query->getTable());
 
 		// Create new table
 		$this->exec($new_sql);
@@ -146,9 +136,9 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		}
 
 		// Copy content back
-		$this->exec('INSERT INTO '.$this->quoteTable($query->getTable()).' SELECT '.implode(', ', array_map(array($this, 'quoteColumn'), $new_columns)).' FROM '.$this->quoteTable($query->getTable().'_t'.$now));
+		$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
 
-		$this->exec('DROP TABLE '.$this->quoteTable($query->getTable().'_t'.$now));
+		$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
 
 		// TODO: Handle query errors
 		return true;
@@ -156,8 +146,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		// TODO: Can we use quoteColumn() for quoting indices?
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index).' ON '.$this->quoteTable($query->getTable()).'('.implode(',', array_map(array($this, 'quoteColumn'), $query->fields)).')';
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().'('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
@@ -171,7 +160,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		);
 
 		// Work out the columns in the table
-		$result = $this->query('PRAGMA table_info('.$this->quoteTable($query->getTable()).')');
+		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table['columns'][$row['name']] = array(
@@ -186,7 +175,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			}
 		}
 
-		$result = $this->query('PRAGMA index_list('.$this->quoteTable($query->getTable()).')');
+		$result = $this->query('PRAGMA index_list('.$query->getTable().')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $cur_index)
 		{
 			// Ignore automatically-generated indices (like primary keys)
@@ -195,7 +184,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				continue;
 			}
 
-			$r2 = $this->query('PRAGMA index_info('.$this->quoteColumn($cur_index['name']).')');
+			$r2 = $this->query('PRAGMA index_info('.$cur_index['name'].')');
 
 			$table['indices'][$cur_index['name']] = array(
 				'fields'	=> array(),
@@ -224,7 +213,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $this->quoteColumn($name).' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
+		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
 	}
 
 	protected function compileLimitOffset($limit, $offset)

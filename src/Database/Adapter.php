@@ -183,10 +183,6 @@ abstract class Flux_Database_Adapter
 		return $quoted_str;
 	}
 
-	abstract public function quoteTable($str);
-
-	abstract public function quoteColumn($str);
-
 	public function prepare($sql)
 	{
 		$handle = $this->curHandle++;
@@ -447,11 +443,11 @@ abstract class Flux_Database_Adapter
 		if (empty($query->fields))
 			throw new Exception('A SELECT query must select at least 1 field.');
 
-		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', array_map(array($this, 'quoteColumn'), $query->fields));
+		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
 		$table = $query->getTable();
 		if (!empty($table))
-			$sql .= ' FROM '.$this->quoteTable($table);
+			$sql .= ' FROM '.$table;
 
 		if (!empty($query->joins))
 			$sql .= $this->compileJoin($query->joins);
@@ -483,7 +479,7 @@ abstract class Flux_Database_Adapter
 		if (empty($query->values))
 			throw new Exception('An INSERT query must contain at least 1 value.');
 
-		$sql = 'INSERT INTO '.$this->quoteTable($table).' ('.implode(', ', array_map(array($this, 'quoteColumn'), array_keys($query->values))).') VALUES ('.implode(', ', array_values($query->values)).')';
+		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 		// TODO: Possible dumb question: do we need the array_values() call? Or does that have to do with the order of the elements when calling array_keys()? Same thing in multiple cases, in multiple files.
 
 		return $sql;
@@ -500,9 +496,9 @@ abstract class Flux_Database_Adapter
 
 		$updates = array();
 		foreach ($query->values as $key => $value)
-			$updates[] = $this->quoteColumn($key).' = '.$value;
+			$updates[] = $key.' = '.$value;
 
-		$sql = 'UPDATE '.$this->quoteTable($table).' SET '.implode(', ', $updates);
+		$sql = 'UPDATE '.$table.' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
 			$sql .= $this->compileWhere($query->where);
@@ -522,7 +518,7 @@ abstract class Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A DELETE query must have a table specified.');
 
-		$sql = 'DELETE FROM '.$this->quoteTable($table);
+		$sql = 'DELETE FROM '.$table;
 
 		if (!empty($query->where))
 			$sql .= $this->compileWhere($query->where);
@@ -545,7 +541,7 @@ abstract class Flux_Database_Adapter
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least 1 value.');
 
-		$sql = 'REPLACE INTO '.$this->quoteTable($table).' ('.implode(', ', array_map(array($this, 'quoteColumn'), array_keys($query->values))).') VALUES ('.implode(', ', array_values($query->values)).')';
+		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 		return $sql;
 	}
 
@@ -555,7 +551,7 @@ abstract class Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$this->quoteTable($table);
+		$sql = 'TRUNCATE TABLE '.$table;
 		return $this->exec($sql);
 	}
 
@@ -566,19 +562,19 @@ abstract class Flux_Database_Adapter
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 
-		$sql = 'CREATE TABLE '.$this->quoteTable($query->getTable()).' ('.implode(', ', $fields).')';
+		$sql = 'CREATE TABLE '.$query->getTable().' ('.implode(', ', $fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runRenameTable(Flux_Database_Query_RenameTable $query)
 	{
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' RENAME TO '.$this->quoteTable($query->new_name);
+		$sql = 'ALTER TABLE '.$query->getTable().' RENAME TO '.$query->new_name;
 		return $this->exec($sql);
 	}
 
 	public function runDropTable(Flux_Database_Query_DropTable $query)
 	{
-		$sql = 'DROP TABLE '.$this->quoteTable($query->getTable());
+		$sql = 'DROP TABLE '.$query->getTable();
 		return $this->exec($sql);
 	}
 
@@ -592,7 +588,7 @@ abstract class Flux_Database_Adapter
 	{
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' ADD COLUMN '.$field;
+		$sql = 'ALTER TABLE '.$query->getTable().' ADD COLUMN '.$field;
 		return $this->exec($sql);
 	}
 
@@ -600,38 +596,38 @@ abstract class Flux_Database_Adapter
 	{
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' MODIFY '.$this->quoteColumn($query->field->name).' '.$field;
+		$sql = 'ALTER TABLE '.$query->getTable().' MODIFY '.$query->field->name.' '.$field;
 		return $this->exec($sql);
 		// TODO: Fix return values (bool)!
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
 	{
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' DROP '.$this->quoteColumn($query->field);
+		$sql = 'ALTER TABLE '.$query->getTable().' DROP '.$query->field;
 		return $this->exec($sql);
 	}
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$sql = 'SHOW COLUMNS FROM '.$this->quoteTable($query->getTable()).' LIKE '.$this->quote($query->field);
+		$sql = 'SHOW COLUMNS FROM '.$query->getTable().' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index).' ('.implode(',', array_map(array($this, 'quoteColumn'), $query->fields)).')';
+		$sql = 'ALTER TABLE '.$query->getTable().' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'ALTER TABLE '.$this->quoteTable($query->getTable()).' DROP INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index);
+		$sql = 'ALTER TABLE '.$query->getTable().' DROP INDEX '.$query->getTable().'_'.$query->index;
 		return $this->exec($sql);
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SHOW INDEX FROM '.$this->quoteTable($query->getTable()).' WHERE Key_name = '.$this->quote($query->getTable().'_'.$query->index);
+		$sql = 'SHOW INDEX FROM '.$query->getTable().' WHERE Key_name = '.$this->quote($query->getTable().'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
@@ -645,7 +641,7 @@ abstract class Flux_Database_Adapter
 		);
 
 		// Fetch column information
-		$result = $this->query('DESCRIBE '.$this->quoteTable($query->getTable()));
+		$result = $this->query('DESCRIBE '.$query->getTable());
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table['columns'][$row['Field']] = array(
@@ -662,7 +658,7 @@ abstract class Flux_Database_Adapter
 		}
 
 		// Fetch all indices
-		$result = $this->query('SHOW INDEXES FROM '.$this->quoteTable($query->getTable()));
+		$result = $this->query('SHOW INDEXES FROM '.$query->getTable());
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			if ($row['Key_name'] == 'PRIMARY')
@@ -699,7 +695,7 @@ abstract class Flux_Database_Adapter
 		if ($column->type === Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL)
 			return $this->compileColumnSerial($column->name);
 
-		$sql = $this->quoteColumn($column->name).' '.$this->compileColumnType($column->type);
+		$sql = $column->name.' '.$this->compileColumnType($column->type);
 
 		if (!empty($column->default))
 			$sql .= ' DEFAULT '.$column->default;
@@ -719,7 +715,7 @@ abstract class Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $this->quoteColumn($name).' INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY';
+		return $name.' INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY';
 	}
 
 	protected function compileJoin(array $joins)
@@ -728,7 +724,7 @@ abstract class Flux_Database_Adapter
 
 		foreach ($joins as $join)
 		{
-			$sql .= ' '.$join->type.' '.$this->quoteTable($join->getTable());
+			$sql .= ' '.$join->type.' '.$join->getTable();
 			if (!empty($join->on))
 				$sql .= ' ON '.$this->compileConditions($join->on);
 		}

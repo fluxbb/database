@@ -30,16 +30,6 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return 'pgsql:'.implode(';', $args);
 	}
 
-	public function quoteTable($str)
-	{
-		return '"'.str_replace('"', '""', $str).'"';
-	}
-
-	public function quoteColumn($str)
-	{
-		return '"'.str_replace('"', '""', $str).'"';
-	}
-
 	public function compileReplace(Flux_Database_Query_Replace $query)
 	{
 		$table = $query->getTable();
@@ -53,11 +43,11 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		foreach ($query->keys as $key)
 		{
 			$value = $query->values[$key];
-			$keys[] = $this->quoteColumn($key).' = '.$value;
+			$keys[] = $key.' = '.$value;
 		}
 
 		// TODO: What if keys is just a string (like one query in include/functions.php)? This needs to be handled.
-		$sql = 'INSERT INTO '.$this->quoteTable($table).' ('.implode(', ', array_map(array($this, 'quoteColumn'), array_keys($query->values))).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$this->quoteTable($table).' WHERE ('.implode(' AND ', $keys).'))';
+		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
 		return $sql;
 	}
 
@@ -67,7 +57,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$this->quoteTable($table).' RESTART IDENTITY';
+		$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
 		return $this->exec($sql);
 	}
 
@@ -88,9 +78,9 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$subquery->field = $new_field;
 		$subquery->run();
 
-		$this->exec('UPDATE '.$this->quoteTable($query->getTable()).' SET '.$this->quoteColumn($query->field->name.'_t'.$now).' = '.$this->quoteColumn($query->field->name));
+		$this->exec('UPDATE '.$query->getTable().' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
 		$this->dropField($query->getTable(), $query->field->name)->run();
-		$this->exec('ALTER TABLE '.$this->quoteTable($query->getTable()).' RENAME COLUMN '.$this->quoteColumn($query->field->name.'_t'.$now).' TO '.$this->quoteColumn($query->field->name));
+		$this->exec('ALTER TABLE '.$query->getTable().' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 
 		return true;
 	}
@@ -103,7 +93,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index).' ON '.$this->quoteTable($query->getTable()).' ('.implode(',', array_map(array($this, 'quoteColumn'), $query->fields)).')';
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().' ('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
@@ -115,7 +105,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'DROP INDEX '.$this->quoteColumn($query->getTable().'_'.$query->index);
+		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
 		return $this->exec($sql);
 	}
 
@@ -176,7 +166,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $this->quoteColumn($name).' SERIAL NOT NULL PRIMARY KEY';
+		return $name.' SERIAL NOT NULL PRIMARY KEY';
 	}
 
 	protected function compileConditions($conditions)
