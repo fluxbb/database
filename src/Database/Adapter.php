@@ -547,8 +547,10 @@ abstract class Flux_Database_Adapter
 
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least 1 value.');
+		
+		$values = array_merge($query->keys, $query->values);
 
-		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
+		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(', ', array_values($values)).')';
 		return $sql;
 	}
 

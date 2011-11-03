@@ -39,15 +39,23 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least 1 value.');
 
-		$keys = array();
-		foreach ($query->keys as $key)
+		$values = array();
+		foreach ($query->values as $key => $value)
 		{
-			$value = $query->values[$key];
+			$values[] = $key.' = '.$value;
+		}
+		
+		$keys = array();
+		foreach ($query->keys as $key => $value)
+		{
 			$keys[] = $key.' = '.$value;
 		}
+		
+		// Update if row exists
+		$sql = 'UPDATE '.$table.' SET '.implode(', ', $values).' WHERE '.implode(' AND ', $keys).'; ';
+		// Insert if it did not
+		$sql .= 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
 
-		// TODO: What if keys is just a string (like one query in include/functions.php)? This needs to be handled.
-		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
 		return $sql;
 	}
 
