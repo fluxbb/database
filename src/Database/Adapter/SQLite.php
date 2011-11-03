@@ -11,11 +11,11 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 {
 	public function generateDsn()
 	{
-		if (!isset($this->options['file'])) {
-			throw new Exception('No filename specified for SQLite database.');
+		if (!isset($this->options['dbname'])) {
+			throw new Exception('No database name specified for SQLite database.');
 		}
 
-		return 'sqlite:'.$this->options['file'];
+		return 'sqlite:'.$this->options['dbname'];
 	}
 
 	public function setNames($charset)

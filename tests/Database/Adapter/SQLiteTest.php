@@ -13,6 +13,6 @@ class Flux_Database_Adapter_SQLiteTest extends Flux_Database_AdapterTest
             );
         }
 
-		return Flux_Database_Adapter::factory('SQLite', array('file' => $GLOBALS['DB_SQLITE_FILE']));
+		return Flux_Database_Adapter::factory('SQLite', array('dbname' => $GLOBALS['DB_SQLITE_DBNAME']));
 	}
 }

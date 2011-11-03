@@ -5,7 +5,7 @@ $GLOBALS['DB_MYSQL_HOST'] = 'localhost';
 $GLOBALS['DB_MYSQL_USER'] = 'root';
 $GLOBALS['DB_MYSQL_PASSWD'] = '';
 
-$GLOBALS['DB_SQLITE_FILE'] = ':memory:';
+$GLOBALS['DB_SQLITE_DBNAME'] = ':memory:';
 
 $GLOBALS['DB_PGSQL_DBNAME'] = 'fluxbb__test';
 $GLOBALS['DB_PGSQL_HOST'] = 'localhost';
