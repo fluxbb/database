@@ -62,7 +62,7 @@ abstract class Flux_Database_Adapter
 	{
 		$return = array();
 		$pdo_drivers = PDO::getAvailableDrivers();
-		foreach (glob(dirname(__FILE__).'/*.php', GLOB_ONLYDIR) as $file)
+		foreach (glob(dirname(__FILE__).'/*.php') as $file)
 		{
 			$name = substr(end(explode('/', $file)), 0, -4);
 
