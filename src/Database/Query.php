@@ -382,11 +382,21 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 class Flux_Database_Query_RenameTable extends Flux_Database_Query
 {
-	public $new_name = '';
+	protected $new_name = '';
 
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runRenameTable($this);
+	}
+
+	public function setNewName($table)
+	{
+		$this->new_name = $table;
+	}
+
+	public function getNewName()
+	{
+		return $this->usePrefix ? $this->adapter->prefix.$this->new_name : $this->new_name;
 	}
 }
 
