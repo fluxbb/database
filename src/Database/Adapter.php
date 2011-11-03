@@ -746,7 +746,6 @@ abstract class Flux_Database_Adapter
 
 	protected function compileGroup($group)
 	{
-		// TODO: Escape? How?
 		return ' GROUP BY '.implode(', ', $group);
 	}
 
@@ -762,7 +761,6 @@ abstract class Flux_Database_Adapter
 
 	protected function compileOrder($order)
 	{
-		// TODO: Escape?
 		return ' ORDER BY '.implode(', ', $order);
 	}
 

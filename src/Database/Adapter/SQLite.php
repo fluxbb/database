@@ -90,7 +90,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 		// Create temporary table
 		$now = time();
-		// TODO: How to escape this? Best would probably be to assemble this using the tableInfo data
+		// TODO: Use tableInfo data instead to create table
 		$tmptable_sql = str_replace('CREATE TABLE '.$query->getTable().' (', 'CREATE TABLE '.$query->getTable().'_t'.$now.' (', $table_sql);
 		$this->exec($tmptable_sql);
 
