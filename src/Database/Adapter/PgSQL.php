@@ -176,6 +176,15 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			$table['indices'][$row['index_name']]['fields'][] = $row['column_name'];
 		}
 	}
+	
+	protected function compileColumnType($type)
+	{
+		if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_UINT)
+		{
+			return 'INTEGER';
+		}
+		return $type;
+	}
 
 	protected function compileColumnSerial($name)
 	{
