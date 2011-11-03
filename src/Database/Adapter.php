@@ -539,7 +539,7 @@ abstract class Flux_Database_Adapter
 		return $sql;
 	}
 
-	public function compileReplace(Flux_Database_Query_Replace $query)
+	public function runReplace(Flux_Database_Query_Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
 		if (empty($table))
@@ -551,7 +551,8 @@ abstract class Flux_Database_Adapter
 		$values = array_merge($query->keys, $query->values);
 
 		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(', ', array_values($values)).')';
-		return $sql;
+		$result = $this->query($sql, $params);
+		return $result->rowCount();
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)

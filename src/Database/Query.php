@@ -258,21 +258,14 @@ class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
  * @param array $keys
  * 		An array of field names which are considered unique keys for the table.
  */
-class Flux_Database_Query_Replace extends Flux_Database_Query_Multi
+class Flux_Database_Query_Replace extends Flux_Database_Query
 {
 	public $values = array();
 	public $keys = array();
 
-	public function compile()
+	public function _run(array $params = array())
 	{
-		return $this->adapter->compileReplace($this);
-	}
-
-	public function run(array $params = array())
-	{
-		// TODO: Does rowCount even work here?
-		$stmt = parent::run($params);
-		return $stmt->rowCount();
+		return $this->adapter->runReplace($this, $params);
 	}
 }
 

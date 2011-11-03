@@ -30,7 +30,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return 'pgsql:'.implode(';', $args);
 	}
 
-	public function compileReplace(Flux_Database_Query_Replace $query)
+	public function runReplace(Flux_Database_Query_Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
 		if (empty($table))
@@ -52,11 +52,18 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		}
 		
 		// Update if row exists
-		$sql = 'UPDATE '.$table.' SET '.implode(', ', $values).' WHERE '.implode(' AND ', $keys).'; ';
+		$sql = 'UPDATE '.$table.' SET '.implode(', ', $values).' WHERE '.implode(' AND ', $keys);
+		$r1 = $this->query($sql, $params);
+		if ($r1->rowCount() > 0)
+		{
+			return 2;
+		}
+		
 		// Insert if it did not
-		$sql .= 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
-
-		return $sql;
+		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
+		$r2 = $this->query($sql, $params);
+		
+		return 1;
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
