@@ -53,15 +53,14 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		
 		// Update if row exists
 		$sql = 'UPDATE '.$table.' SET '.implode(', ', $values).' WHERE '.implode(' AND ', $keys);
-		$r1 = $this->query($sql, $params);
-		$c1 = $r1->rowCount();
+		$this->query($sql, $params);
 		
 		// Insert if it did not
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
-		$r2 = $this->query($sql, $params);
-		$c2 = $r2->rowCount();
+		$r = $this->query($sql, $params);
+		$insertCount = $r->rowCount();
 		
-		return (int) (($c1 + $c2) > 0);
+		return $insertCount > 0 ? 1 : 2;
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)

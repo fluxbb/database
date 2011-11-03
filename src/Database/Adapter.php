@@ -552,7 +552,7 @@ abstract class Flux_Database_Adapter
 
 		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(', ', array_values($values)).')';
 		$result = $this->query($sql, $params);
-		return (int) ($result->rowCount() > 0);
+		return $result->rowCount();
 	}
 
 	public function runTruncate(Flux_Database_Query_Truncate $query)
