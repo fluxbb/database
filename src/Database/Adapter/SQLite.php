@@ -18,7 +18,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return 'sqlite:'.$this->options['dbname'];
 	}
 
-	public function setNames($charset)
+	public function setCharset($charset)
 	{
 		$sql = 'PRAGMA encoding = '.$this->quote($charset);
 		if ($this->exec($sql) === false)

@@ -136,7 +136,7 @@ abstract class Flux_Database_Adapter
 		$this->type = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
 		// Attempt to set names
-		$this->setNames($charset);
+		$this->setCharset($charset);
 
 		// Set the table prefix
 		$this->setPrefix($prefix);
@@ -148,7 +148,7 @@ abstract class Flux_Database_Adapter
 	 * @param string $charset
 	 * 		The character set to use.
 	 */
-	public function setNames($charset)
+	public function setCharset($charset)
 	{
 		$sql = 'SET NAMES '.$this->quote($charset);
 		if ($this->exec($sql) === false)
