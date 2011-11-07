@@ -246,8 +246,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$sql = parent::compileConditions($conditions);
 
 		// Replace LIKE with ILIKE to get case insensitive match
-		// TODO: Really "$1" twice?
-		return preg_replace('%(\s)(LIKE)(\s)%i', '$1ILIKE$1', $sql);
+		return preg_replace('%(\s)(LIKE)(\s)%i', '$1ILIKE$3', $sql);
 	}
 
 	protected function compileLimitOffset($limit, $offset)
