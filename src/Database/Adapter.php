@@ -39,7 +39,7 @@ abstract class Flux_Database_Adapter
 	public static function factory($type, array $options = array())
 	{
 		// Sanitise type
-		if (preg_match('#[^A-Za-z0-9_]#', $type))
+		if (preg_match('%[^A-Za-z0-9_]%', $type))
 		{
 			throw new Exception('Illegal database adapter type.');
 		}
@@ -485,7 +485,6 @@ abstract class Flux_Database_Adapter
 			throw new Exception('An INSERT query must contain at least one value.');
 
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
-		// TODO: Possible dumb question: do we need the array_values() call? Or does that have to do with the order of the elements when calling array_keys()? Same thing in multiple cases, in multiple files.
 
 		return $sql;
 	}
