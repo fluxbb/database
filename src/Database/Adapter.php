@@ -837,6 +837,9 @@ abstract class Flux_Database_Adapter
 			return $this->compileColumnSerial($column->name);
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
+		
+		if (!$column->allow_null)
+			$sql .= ' NOT NULL';
 
 		if (!empty($column->default))
 			$sql .= ' DEFAULT '.$column->default;
@@ -844,8 +847,6 @@ abstract class Flux_Database_Adapter
 		if (!empty($column->key))
 			$sql .= ' '.$column->key;
 
-		// TODO: allow_null?
-		// TODO: do we need another default value if allow_null is true?
 		return $sql;
 	}
 

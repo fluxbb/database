@@ -524,12 +524,14 @@ class Flux_Database_Query_Helper_TableColumn
 	public $type;
 	public $default;
 	public $key;
+	public $allow_null;
 
-	public function __construct($name, $type, $default = null, $key = null)
+	public function __construct($name, $type, $default = null, $allow_null = true, $key = null)
 	{
 		$this->name = $name;
 		$this->type = $type;
 		$this->default = $default;
 		$this->key = $key;
+		$this->allow_null = $allow_null;
 	}
 }
