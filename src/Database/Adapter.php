@@ -448,7 +448,7 @@ abstract class Flux_Database_Adapter
 	public function compileSelect(Flux_Database_Query_Select $query)
 	{
 		if (empty($query->fields))
-			throw new Exception('A SELECT query must select at least 1 field.');
+			throw new Exception('A SELECT query must select at least one field.');
 
 		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
@@ -484,7 +484,7 @@ abstract class Flux_Database_Adapter
 			throw new Exception('An INSERT query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('An INSERT query must contain at least 1 value.');
+			throw new Exception('An INSERT query must contain at least one value.');
 
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 		// TODO: Possible dumb question: do we need the array_values() call? Or does that have to do with the order of the elements when calling array_keys()? Same thing in multiple cases, in multiple files.
@@ -499,7 +499,7 @@ abstract class Flux_Database_Adapter
 			throw new Exception('An UPDATE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('An UPDATE query must contain at least 1 value.');
+			throw new Exception('An UPDATE query must contain at least one value.');
 
 		$updates = array();
 		foreach ($query->values as $key => $value)
@@ -546,7 +546,10 @@ abstract class Flux_Database_Adapter
 			throw new Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('A REPLACE query must contain at least 1 value.');
+			throw new Exception('A REPLACE query must contain at least one value.');
+		
+		if (empty($query->keys))
+			throw new Exception('A REPLACE query must contain at least one key.');
 		
 		$values = array_merge($query->keys, $query->values);
 
@@ -567,83 +570,161 @@ abstract class Flux_Database_Adapter
 
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
 	{
-		// TODO: Exception if no table etc...
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A CREATE TABLE query must have a table specified.');
+
+		if (empty($query->fields))
+			throw new Exception('A CREATE TABLE query must contain at least one field.');
+
 		$fields = array();
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 
-		$sql = 'CREATE TABLE '.$query->getTable().' ('.implode(', ', $fields).')';
+		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runRenameTable(Flux_Database_Query_RenameTable $query)
 	{
-		$sql = 'ALTER TABLE '.$query->getTable().' RENAME TO '.$query->new_name;
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A RENAME TABLE query must have a table specified.');
+
+		$new_name = $query->getNewName();
+		if (empty($new_name))
+			throw new Exception('A RENAME TABLE query must have a new table name specified.');
+
+		$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
 		return $this->exec($sql);
 	}
 
 	public function runDropTable(Flux_Database_Query_DropTable $query)
 	{
-		$sql = 'DROP TABLE '.$query->getTable();
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A DROP TABLE query must have a table specified.');
+		
+		$sql = 'DROP TABLE '.$table;
 		return $this->exec($sql);
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SHOW TABLES LIKE '.$this->quote($query->getTable());
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A TABLE EXISTS query must have a table specified.');
+		
+		$sql = 'SHOW TABLES LIKE '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runAddField(Flux_Database_Query_AddField $query)
 	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ADD FIELD query must have a table specified.');
+		
+		if ($query->field == NULL)
+			throw new Exception('An ADD FIELD query must have field information specified.');
+		
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$query->getTable().' ADD COLUMN '.$field;
+		$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
 		return $this->exec($sql);
 	}
 
 	public function runAlterField(Flux_Database_Query_AlterField $query)
 	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ALTER FIELD query must have a table specified.');
+		
+		if ($query->field == NULL)
+			throw new Exception('An ALTER FIELD query must have field information specified.');
+		
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$query->getTable().' MODIFY '.$query->field->name.' '.$field;
+		$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
 		return $this->exec($sql);
 		// TODO: Fix return values (bool)!
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
 	{
-		$sql = 'ALTER TABLE '.$query->getTable().' DROP '.$query->field;
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A DROP FIELD query must have a table specified.');
+		
+		if (empty($query->field))
+			throw new Exception('A DROP FIELD query must have a field specified.');
+		
+		$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
 		return $this->exec($sql);
 	}
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$sql = 'SHOW COLUMNS FROM '.$query->getTable().' LIKE '.$this->quote($query->field);
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A FIELD EXISTS query must have a table specified.');
+		
+		if (empty($query->field))
+			throw new Exception('A FIELD EXISTS query must have a field specified.');
+		
+		$sql = 'SHOW COLUMNS FROM '.$table.' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		$sql = 'ALTER TABLE '.$query->getTable().' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ('.implode(',', $query->fields).')';
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ADD INDEX query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('An ADD INDEX query must have an index specified.');
+		
+		if (empty($query->fields))
+			throw new Exception('An ADD INDEX query must have at least one field specified.');
+		
+		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'ALTER TABLE '.$query->getTable().' DROP INDEX '.$query->getTable().'_'.$query->index;
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A DROP INDEX query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('A DROP INDEX query must have an index specified.');
+		
+		$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
 		return $this->exec($sql);
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SHOW INDEX FROM '.$query->getTable().' WHERE Key_name = '.$this->quote($query->getTable().'_'.$query->index);
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An INDEX EXISTS query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('An INDEX EXISTS query must have an index specified.');
+		
+		$sql = 'SHOW INDEX FROM '.$table.' WHERE Key_name = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
-		$table = array(
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A TABLE INFO query must have a table specified.');
+		
+		$table_info = array(
 			'columns'		=> array(),
 			'primary_key'	=> '',
 			'unique'		=> array(),
@@ -651,10 +732,10 @@ abstract class Flux_Database_Adapter
 		);
 
 		// Fetch column information
-		$result = $this->query('DESCRIBE '.$query->getTable());
+		$result = $this->query('DESCRIBE '.$table);
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
-			$table['columns'][$row['Field']] = array(
+			$table_info['columns'][$row['Field']] = array(
 				'type'			=> $row['Type'],
 				'default'		=> $row['Default'],
 				'allow_null'	=> $row['Null'] == 'YES',
@@ -663,41 +744,41 @@ abstract class Flux_Database_Adapter
 			// Save primary key
 			if ($row['Key'] == 'PRI')
 			{
-				$table['primary_key'] = $row['Field'];
+				$table_info['primary_key'] = $row['Field'];
 			}
 		}
 
 		// Fetch all indices
-		$result = $this->query('SHOW INDEXES FROM '.$query->getTable());
+		$result = $this->query('SHOW INDEXES FROM '.$table);
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			if ($row['Key_name'] == 'PRIMARY')
 			{
-				$table['primary_key'] = $row['Column_name'];
+				$table_info['primary_key'] = $row['Column_name'];
 				continue;
 			}
 
-			if (!isset($table['indices'][$row['Key_name']]))
+			if (!isset($table_info['indices'][$row['Key_name']]))
 			{
-				$table['indices'][$row['Key_name']] = array(
+				$table_info['indices'][$row['Key_name']] = array(
 					'fields'	=> array(),
 					'unique'	=> $row['Non_unique'] != 1,
 				);
 
 				if ($row['Non_unique'] != 1)
 				{
-					$table['unique'][] = array($row['Column_name']);
+					$table_info['unique'][] = array($row['Column_name']);
 				}
 			}
 			else
 			{
-				$table['unique'][count($table['unique']) - 1][] = $row['Column_name'];
+				$table_info['unique'][count($table_info['unique']) - 1][] = $row['Column_name'];
 			}
 
-			$table['indices'][$row['Key_name']]['fields'][] = $row['Column_name'];
+			$table_info['indices'][$row['Key_name']]['fields'][] = $row['Column_name'];
 		}
 
-		return $table;
+		return $table_info;
 	}
 
 	protected function compileColumnDefinition(Flux_Database_Query_Helper_TableColumn $column)
@@ -902,7 +983,7 @@ abstract class Flux_Database_Adapter
 	{
 		$q = new Flux_Database_Query_RenameTable($this);
 		$q->setTable($table);
-		$q->new_name = $new_name;
+		$q->setNewName($new_name);
 		return $q;
 	}
 
