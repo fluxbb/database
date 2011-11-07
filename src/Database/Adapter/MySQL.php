@@ -31,14 +31,17 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		if (isset($this->options['port'])) {
 			$args[] = 'port='.$this->options['port'];
 		}
+		
+		if (isset($this->options['unix_socket'])) {
+			// Replace current arguments with unix socket, as they cannot be used together
+			$args = array('unix_socket='.$this->options['unix_socket']);
+		}
 
 		if (isset($this->options['dbname'])) {
 			$args[] = 'dbname='.$this->options['dbname'];
 		} else {
 			throw new Exception('No database name specified for MySQL database.');
 		}
-
-		// TODO: unix_socket and possibly charset?
 
 		return 'mysql:'.implode(';', $args);
 	}
