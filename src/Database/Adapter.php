@@ -405,19 +405,12 @@ abstract class Flux_Database_Adapter
 	 * Fetch a list of all queries which have been executed since the connection
 	 * was initiated.
 	 *
-	 * NOTE: This only works when debug mode is enabled
-	 *
 	 * @return array
 	 * 		A list of queries which have been previously executed.
 	 */
-	public function getDebugQueries()
+	public function getExecutedQueries()
 	{
-		if (isset($this->options['debug']) && $this->options['debug'])
-		{
-			return $this->queries;
-		}
-
-		return array();
+		return $this->queries;
 	}
 
 	/**
