@@ -223,6 +223,8 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 			$table_info['indices'][$row['index_name']]['fields'][] = $row['column_name'];
 		}
+		
+		return $table_info;
 	}
 	
 	protected function compileColumnType($type)
