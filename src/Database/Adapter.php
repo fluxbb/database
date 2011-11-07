@@ -561,8 +561,14 @@ abstract class Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$table;
-		return $this->exec($sql);
+		try {
+			$sql = 'TRUNCATE TABLE '.$table;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
@@ -578,8 +584,14 @@ abstract class Flux_Database_Adapter
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 
-		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
-		return $this->exec($sql);
+		try {
+			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runRenameTable(Flux_Database_Query_RenameTable $query)
@@ -592,8 +604,14 @@ abstract class Flux_Database_Adapter
 		if (empty($new_name))
 			throw new Exception('A RENAME TABLE query must have a new table name specified.');
 
-		$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
-		return $this->exec($sql);
+		try {
+			$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runDropTable(Flux_Database_Query_DropTable $query)
@@ -602,8 +620,14 @@ abstract class Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A DROP TABLE query must have a table specified.');
 		
-		$sql = 'DROP TABLE '.$table;
-		return $this->exec($sql);
+		try {
+			$sql = 'DROP TABLE '.$table;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
@@ -627,8 +651,14 @@ abstract class Flux_Database_Adapter
 		
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
-		return $this->exec($sql);
+		try {
+			$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runAlterField(Flux_Database_Query_AlterField $query)
@@ -642,9 +672,14 @@ abstract class Flux_Database_Adapter
 		
 		$field = $this->compileColumnDefinition($query->field);
 
-		$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
-		return $this->exec($sql);
-		// TODO: Fix return values (bool)!
+		try {
+			$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
@@ -656,8 +691,14 @@ abstract class Flux_Database_Adapter
 		if (empty($query->field))
 			throw new Exception('A DROP FIELD query must have a field specified.');
 		
-		$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
-		return $this->exec($sql);
+		try {
+			$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
@@ -685,8 +726,14 @@ abstract class Flux_Database_Adapter
 		if (empty($query->fields))
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
 		
-		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		try {
+			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
@@ -698,8 +745,14 @@ abstract class Flux_Database_Adapter
 		if (empty($query->index))
 			throw new Exception('A DROP INDEX query must have an index specified.');
 		
-		$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
+		try {
+			$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)

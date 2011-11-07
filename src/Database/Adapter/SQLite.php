@@ -37,7 +37,13 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
 		$sql .= 'DELETE FROM '.$table;
 
-		return $this->exec($sql);
+		try {
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
@@ -65,68 +71,71 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		if (empty($query->field))
 			throw new Exception('A DROP FIELD query must have a field specified.');
 		
-		// Fetch table SQL
-		$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = '.$this->quote($table));
-
-		$table_sql = $result->fetchColumn();
-		if ($table_sql == NULL)
-		{
-			return false;
-		}
-
-		// Create temporary table
-		$now = time();
-		// TODO: Use tableInfo data instead to create table
-		$tmptable_sql = str_replace('CREATE TABLE '.$table.' (', 'CREATE TABLE '.$table.'_t'.$now.' (', $table_sql);
-		$this->exec($tmptable_sql);
-
-		$this->exec('INSERT INTO '.$table.'_t'.$now.' SELECT * FROM '.$table);
-
-		$table_info = $this->tableInfo($table)->run();
-
-		unset($table_info['columns'][$query->field]);
-		$new_columns = array_keys($table_info['columns']);
-
-		$new_sql = 'CREATE TABLE '.$table.' (';
-
-		foreach ($table_info['columns'] as $cur_column => $column)
-		{
-			$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
-		}
-
-		// TODO!
-		if (isset($table_info['unique']))
-			$new_sql .= "\n".$table_info['unique'].',';
-
-		if (!empty($table_info['primary_key']))
-			$new_sql .= "\n".'PRIMARY KEY ('.$table_info['primary_key'].'),';
-
-		$new_sql = trim($new_sql, ',')."\n".');';
-
-		// Drop old table
-		$this->exec('DROP TABLE '.$table);
-
-		// Create new table
-		$this->exec($new_sql);
-
-		// Recreate indexes
-		if (!empty($table_info['indices']))
-		{
-			foreach ($table_info['indices'] as $index_name => $cur_index)
+		try {
+			// Fetch table SQL
+			$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = '.$this->quote($table));
+	
+			$table_sql = $result->fetchColumn();
+			if ($table_sql == NULL)
 			{
-				if (!in_array($query->field, $cur_index['fields']))
+				return false;
+			}
+	
+			// Create temporary table
+			$now = time();
+			// TODO: Use tableInfo data instead to create table
+			$tmptable_sql = str_replace('CREATE TABLE '.$table.' (', 'CREATE TABLE '.$table.'_t'.$now.' (', $table_sql);
+			$this->exec($tmptable_sql);
+	
+			$this->exec('INSERT INTO '.$table.'_t'.$now.' SELECT * FROM '.$table);
+	
+			$table_info = $this->tableInfo($table)->run();
+	
+			unset($table_info['columns'][$query->field]);
+			$new_columns = array_keys($table_info['columns']);
+	
+			$new_sql = 'CREATE TABLE '.$table.' (';
+	
+			foreach ($table_info['columns'] as $cur_column => $column)
+			{
+				$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
+			}
+	
+			// TODO!
+			if (isset($table_info['unique']))
+				$new_sql .= "\n".$table_info['unique'].',';
+	
+			if (!empty($table_info['primary_key']))
+				$new_sql .= "\n".'PRIMARY KEY ('.$table_info['primary_key'].'),';
+	
+			$new_sql = trim($new_sql, ',')."\n".');';
+	
+			// Drop old table
+			$this->exec('DROP TABLE '.$table);
+	
+			// Create new table
+			$this->exec($new_sql);
+	
+			// Recreate indexes
+			if (!empty($table_info['indices']))
+			{
+				foreach ($table_info['indices'] as $index_name => $cur_index)
 				{
-					$this->dropIndex($table, $index_name)->run();
+					if (!in_array($query->field, $cur_index['fields']))
+					{
+						$this->dropIndex($table, $index_name)->run();
+					}
 				}
 			}
+	
+			// Copy content back
+			$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
+	
+			$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
+		} catch (PDOException $e) {
+			return false;
 		}
-
-		// Copy content back
-		$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
-
-		$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
-
-		// TODO: Handle query errors
+		
 		return true;
 	}
 
@@ -162,8 +171,14 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		if (empty($query->fields))
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
 		
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		try {
+			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
@@ -175,8 +190,14 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		if (empty($query->index))
 			throw new Exception('A DROP INDEX query must have an index specified.');
 		
-		$sql = 'DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
+		try {
+			$sql = 'DROP INDEX '.$table.'_'.$query->index;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)

@@ -58,9 +58,16 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$sql = 'UPDATE '.$table.' SET '.implode(', ', $values).' WHERE '.implode(' AND ', $keys);
 		$this->query($sql, $params);
 		
+		$where = array();
+		foreach ($query->keys as $key => $value)
+		{
+			$where[] = $key.' = '.$value.'_k';
+			$params[$value.'_k'] = $params[$value];
+		}
+		
 		// Insert if it did not
-		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') SELECT '.implode(', ', array_values($query->values)).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $keys).'))';
-		$r = $this->query($sql, $params);
+		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys(array_merge($query->values, $query->keys))).') SELECT '.implode(', ', array_values(array_merge($query->values, $query->keys))).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $where).'))';
+ 		$r = $this->query($sql, $params);
 		$insertCount = $r->rowCount();
 		
 		return $insertCount > 0 ? 1 : 2;
@@ -72,8 +79,14 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (empty($table))
 			throw new Exception('A TRUNCATE query must have a table specified.');
 
-		$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
-		return $this->exec($sql);
+		try {
+			$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
@@ -104,10 +117,14 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$subquery->field = $new_field;
 		$subquery->run();
 
-		$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
-		$this->dropField($table, $query->field->name)->run();
-		$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
-
+		try {
+			$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
+			$this->dropField($table, $query->field->name)->run();
+			$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -136,8 +153,14 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (empty($query->fields))
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
 		
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		try {
+			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
@@ -149,8 +172,14 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (empty($query->index))
 			throw new Exception('A DROP INDEX query must have an index specified.');
 	
-		$sql = 'DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
+		try {
+			$sql = 'DROP INDEX '.$table.'_'.$query->index;
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
