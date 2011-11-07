@@ -38,7 +38,12 @@ abstract class Flux_Database_Adapter
 	 */
 	public static function factory($type, array $options = array())
 	{
-		// TODO: Should we sanitise type?
+		// Sanitise type
+		if (preg_match('#[^A-Za-z0-9_]#', $type))
+		{
+			throw new Exception('Illegal database adapter type.');
+		}
+		
 		$name = 'Flux_Database_Adapter_'.$type;
 		$file = str_replace('_', '/', 'Adapter_'.$type).'.php';
 
@@ -49,7 +54,7 @@ abstract class Flux_Database_Adapter
 		}
 		else
 		{
-			throw new Exception('Illegal database adapter type "'.$type.'"');
+			throw new Exception('Database adapter type "'.$type.'" does not exist.');
 		}
 	}
 
