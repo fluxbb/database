@@ -139,6 +139,19 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
+	
+	public function runDropIndex(Flux_Database_Query_DropIndex $query)
+	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A DROP INDEX query must have a table specified.');
+	
+		if (empty($query->index))
+			throw new Exception('A DROP INDEX query must have an index specified.');
+	
+		$sql = 'DROP INDEX '.$table.'_'.$query->index;
+		return $this->exec($sql);
+	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
@@ -151,19 +164,6 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		
 		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($table).' AND c2.relname = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
-	}
-
-	public function runDropIndex(Flux_Database_Query_DropIndex $query)
-	{
-		$table = $query->getTable();
-		if (empty($table))
-			throw new Exception('A DROP INDEX query must have a table specified.');
-		
-		if (empty($query->index))
-			throw new Exception('A DROP INDEX query must have an index specified.');
-		
-		$sql = 'DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)

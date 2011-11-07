@@ -46,35 +46,10 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runIndexExists(Flux_Database_Query_IndexExists $query)
-	{
-		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($query->getTable().'_'.$query->index).' AND tbl_name = '.$this->quote($query->getTable()).' AND type=\'index\'';
-		return (bool) $this->query($sql)->fetchColumn();
-	}
-
-	public function runDropIndex(Flux_Database_Query_DropIndex $query)
-	{
-		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
-		return $this->exec($sql);
-	}
-
 	public function runAlterField(Flux_Database_Query_AlterField $query)
 	{
 		// SQLite does not need to change the type of the column, as long as the values are according to the type
 		return true;
-	}
-
-	public function runFieldExists(Flux_Database_Query_FieldExists $query)
-	{
-		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
-		{
-			if ($row['name'] == $query->field)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public function runDropField(Flux_Database_Query_DropField $query)
@@ -144,10 +119,35 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		return true;
 	}
 
+	public function runFieldExists(Flux_Database_Query_FieldExists $query)
+	{
+		$result = $this->query('PRAGMA table_info('.$query->getTable().')');
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			if ($row['name'] == $query->field)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().'('.implode(',', $query->fields).')';
 		return $this->exec($sql);
+	}
+
+	public function runDropIndex(Flux_Database_Query_DropIndex $query)
+	{
+		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
+		return $this->exec($sql);
+	}
+
+	public function runIndexExists(Flux_Database_Query_IndexExists $query)
+	{
+		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($query->getTable().'_'.$query->index).' AND tbl_name = '.$this->quote($query->getTable()).' AND type=\'index\'';
+		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
