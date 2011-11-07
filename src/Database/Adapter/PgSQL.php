@@ -37,7 +37,10 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			throw new Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('A REPLACE query must contain at least 1 value.');
+			throw new Exception('A REPLACE query must contain at least one value.');
+		
+		if (empty($query->keys))
+			throw new Exception('A REPLACE query must contain at least one key.');
 
 		$values = array();
 		foreach ($query->values as $key => $value)
@@ -75,55 +78,101 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_class WHERE relname = '.$this->quote($query->getTable());
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A TABLE EXISTS query must have a table specified.');
+		
+		$sql = 'SELECT 1 FROM pg_class WHERE relname = '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runAlterField(Flux_Database_Query_AlterField $query)
 	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ALTER FIELD query must have a table specified.');
+		
+		if ($query->field == NULL)
+			throw new Exception('An ALTER FIELD query must have field information specified.');
+		
 		$now = time();
 
 		// Add a temporary field with new constraints and old values instead of the new one
-		$subquery = $this->addField($query->getTable());
+		$subquery = $this->addField($table);
 		$new_field = clone $query->field;
 		$new_field->name = $new_field->name.'_t'.$now;
 		$subquery->field = $new_field;
 		$subquery->run();
 
-		$this->exec('UPDATE '.$query->getTable().' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
-		$this->dropField($query->getTable(), $query->field->name)->run();
-		$this->exec('ALTER TABLE '.$query->getTable().' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
+		$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
+		$this->dropField($table, $query->field->name)->run();
+		$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 
 		return true;
 	}
 
 	public function runFieldExists(Flux_Database_Query_FieldExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = '.$this->quote($query->getTable()).' AND a.attname = '.$this->quote($query->field);
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A FIELD EXISTS query must have a table specified.');
+		
+		if (empty($query->field))
+			throw new Exception('A FIELD EXISTS query must have a field specified.');
+		
+		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = '.$this->quote($table).' AND a.attname = '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runAddIndex(Flux_Database_Query_AddIndex $query)
 	{
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$query->getTable().'_'.$query->index.' ON '.$query->getTable().' ('.implode(',', $query->fields).')';
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ADD INDEX query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('An ADD INDEX query must have an index specified.');
+		
+		if (empty($query->fields))
+			throw new Exception('An ADD INDEX query must have at least one field specified.');
+		
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
 		return $this->exec($sql);
 	}
 
 	public function runIndexExists(Flux_Database_Query_IndexExists $query)
 	{
-		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($query->getTable()).' AND c2.relname = '.$this->quote($query->getTable().'_'.$query->index);
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An INDEX EXISTS query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('An INDEX EXISTS query must have an index specified.');
+		
+		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($table).' AND c2.relname = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
 	public function runDropIndex(Flux_Database_Query_DropIndex $query)
 	{
-		$sql = 'DROP INDEX '.$query->getTable().'_'.$query->index;
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A DROP INDEX query must have a table specified.');
+		
+		if (empty($query->index))
+			throw new Exception('A DROP INDEX query must have an index specified.');
+		
+		$sql = 'DROP INDEX '.$table.'_'.$query->index;
 		return $this->exec($sql);
 	}
 
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
-		$table = array(
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A TABLE INFO query must have a table specified.');
+		
+		$table_info = array(
 			'columns'		=> array(),
 			'primary_key'	=> '',
 			'unique'		=> '',
@@ -131,12 +180,12 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		);
 
 		// Fetch column information
-		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = '.$this->quote($query->getTable()).' AND table_schema = '.$this->quote($this->options['dbname']).' ORDER BY ordinal_position ASC';
+		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = '.$this->quote($table).' AND table_schema = '.$this->quote($this->options['dbname']).' ORDER BY ordinal_position ASC';
 		$result = $this->query($sql);
 
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
-			$table['columns'][$row['column_name']] = array(
+			$table_info['columns'][$row['column_name']] = array(
 				'type'			=> $row['column_type'],
 				'default'		=> $row['column_default'],
 				'allow_null'	=> $row['is_nullable'] == 'YES',
@@ -144,35 +193,35 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 			if ($row['column_key'] == 'PRI')
 			{
-				$table['primary_key'] = $row['column_name'];
+				$table_info['primary_key'] = $row['column_name'];
 			}
 		}
 
 		// Fetch index information
-		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = '.$this->quote($query->getTable()).' ORDER BY t.relname, i.relname';
+		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = '.$this->quote($table).' ORDER BY t.relname, i.relname';
 		$result = $this->query($sql);
 
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
-			if (!isset($table['indices'][$row['index_name']]))
+			if (!isset($table_info['indices'][$row['index_name']]))
 			{
-				$table['indices'][$row['index_name']] = array(
+				$table_info['indices'][$row['index_name']] = array(
 					'fields'	=> array(),
 					'unique'	=> $row['indisunique'],
 				);
 
 				if ($row['indisunique'])
 				{
-					$table['unique'][] = $row['column_name'];
+					$table_info['unique'][] = $row['column_name'];
 				}
 			}
 			else
 			{
 				// TODO: multiple primary keys?
-				$table['unique'][count($table['unique']) - 1][] = $row['column_name'];
+				$table_info['unique'][count($table_info['unique']) - 1][] = $row['column_name'];
 			}
 
-			$table['indices'][$row['index_name']]['fields'][] = $row['column_name'];
+			$table_info['indices'][$row['index_name']]['fields'][] = $row['column_name'];
 		}
 	}
 	
