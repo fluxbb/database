@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/../../../src/Database/Adapter.php';
 require_once dirname(__FILE__).'/../AdapterTest.php';
 
-abstract class Flux_Database_Adapter_PgSQLTest extends Flux_Database_AdapterTest
+class Flux_Database_Adapter_PgSQLTest extends Flux_Database_AdapterTest
 {
 	public function createAdapter()
 	{
