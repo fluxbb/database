@@ -364,9 +364,9 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 		return $this->adapter->runCreateTable($this);
 	}
 
-	public function field($name, $type)
+	public function field($name, $type, $default = null, $allow_null = true, $key = null)
 	{
-		$c = new Flux_Database_Query_Helper_TableColumn($name, $type);
+		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $key);
 		$this->fields[] = $c;
 
 		return $c;
@@ -418,9 +418,9 @@ abstract class Flux_Database_Query_Field extends Flux_Database_Query
 	 */
 	public $field = null;
 
-	public function field($name, $type)
+	public function field($name, $type, $default = null, $allow_null = true, $key = null)
 	{
-		$this->field = new Flux_Database_Query_Helper_TableColumn($name, $type);
+		$this->field = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $key);
 
 		return $this->field;
 	}
