@@ -48,15 +48,40 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
 	{
-		$sql = parent::runCreateTable($query);
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A CREATE TABLE query must have a table specified.');
 
-		// TODO: Maybe allow for this function to overwrite the engine for just one query
-		if (!empty($this->engine))
-			$sql .= ' ENGINE = '.$this->quote($this->engine);
+		if (empty($query->fields))
+			throw new Exception('A CREATE TABLE query must contain at least one field.');
 
-		if (!empty($this->charset))
-			$sql .= ' CHARSET = '.$this->quote($this->charset);
-
-		return $sql;
+		$fields = array();
+		foreach ($query->fields as $field)
+			$fields[] = $this->compileColumnDefinition($field);
+		
+		try {
+			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
+			
+			if (!empty($query->indices))
+			{
+				foreach ($query->indices as $index)
+				{
+					$sql .= ' '.$this->compileIndexDefinition($table, $index['name'], $index['columns']);
+				}
+			}
+			
+			// TODO: Maybe allow for this function to overwrite the engine for just one query
+			if (!empty($this->engine))
+				$sql .= ' ENGINE = '.$this->quote($this->engine);
+			
+			if (!empty($this->charset))
+				$sql .= ' CHARSET = '.$this->quote($this->charset);
+			
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+		
+		return true;
 	}
 }
