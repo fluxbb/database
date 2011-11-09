@@ -358,6 +358,8 @@ class Flux_Database_Query_Truncate extends Flux_Database_Query
 class Flux_Database_Query_CreateTable extends Flux_Database_Query
 {
 	public $fields = array();
+	
+	public $indices = array();
 
 	protected function _run(array $params = array())
 	{
@@ -370,6 +372,11 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 		$this->fields[] = $c;
 
 		return $c;
+	}
+	
+	public function index($name, array $columns)
+	{
+		$this->indices[] = array('name' => $name, 'columns' => $columns);
 	}
 }
 

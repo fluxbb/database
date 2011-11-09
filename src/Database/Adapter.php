@@ -583,9 +583,18 @@ abstract class Flux_Database_Adapter
 		$fields = array();
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
-
+		
 		try {
 			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
+			
+			if (!empty($query->indices))
+			{
+				foreach ($query->indices as $index)
+				{
+					$sql .= ' '.$this->compileIndexDefinition($table, $index['name'], $index['columns']);
+				}
+			}
+			
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
@@ -848,6 +857,11 @@ abstract class Flux_Database_Adapter
 			$sql .= ' '.$column->key;
 
 		return $sql;
+	}
+	
+	protected function compileIndexDefinition($table, $name, array $columns)
+	{
+		return 'INDEX '.$table.'_'.$name.' ('.implode(', ', $columns).')';
 	}
 
 	protected function compileColumnType($type)
