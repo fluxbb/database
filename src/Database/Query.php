@@ -374,9 +374,9 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 		return $c;
 	}
 	
-	public function index($name, array $columns)
+	public function index($name, array $columns, $unique = false)
 	{
-		$this->indices[] = array('name' => $name, 'columns' => $columns);
+		$this->indices[] = array('name' => $name, 'columns' => $columns, 'unique' => $unique);
 	}
 }
 

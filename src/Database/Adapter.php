@@ -576,26 +576,30 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A CREATE TABLE query must have a table specified.');
-
+		
 		if (empty($query->fields))
 			throw new Exception('A CREATE TABLE query must contain at least one field.');
-
+		
 		$fields = array();
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 		
 		try {
 			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
-			
+		
+			$this->exec($sql);
+		
 			if (!empty($query->indices))
 			{
 				foreach ($query->indices as $index)
 				{
-					$sql .= ' '.$this->compileIndexDefinition($table, $index['name'], $index['columns']);
+					// Add indices manually
+					$q = $this->addIndex($table, $index['name']);
+					$q->fields = $index['fields'];
+					$q->unique = $index['unique'];
+					$q->run();
 				}
 			}
-			
-			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
@@ -857,11 +861,6 @@ abstract class Flux_Database_Adapter
 			$sql .= ' '.$column->key;
 
 		return $sql;
-	}
-	
-	protected function compileIndexDefinition($table, $name, array $columns)
-	{
-		return 'INDEX '.$table.'_'.$name.' ('.implode(', ', $columns).')';
 	}
 
 	protected function compileColumnType($type)
