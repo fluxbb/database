@@ -60,15 +60,17 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 			$fields[] = $this->compileColumnDefinition($field);
 		
 		try {
-			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
+			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 		
 			if (!empty($query->indices))
 			{
 				foreach ($query->indices as $index)
 				{
-					$sql .= ($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$index['name'].' ('.implode(', ', $index['columns']).')';
+					$sql .= ' ,'.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$index['name'].' ('.implode(', ', $index['columns']).')';
 				}
 			}
+			
+			$sql .= ')';
 		
 			// TODO: Maybe allow for this function to overwrite the engine for just one query
 			if (!empty($this->engine))
