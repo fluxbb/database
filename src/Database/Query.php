@@ -358,17 +358,18 @@ class Flux_Database_Query_Truncate extends Flux_Database_Query
 class Flux_Database_Query_CreateTable extends Flux_Database_Query
 {
 	public $fields = array();
-	
+
 	public $indices = array();
+	public $primary = array();
 
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->runCreateTable($this);
 	}
 
-	public function field($name, $type, $default = null, $allow_null = true, $key = null)
+	public function field($name, $type, $default = null, $allow_null = true)
 	{
-		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $key);
+		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null);
 		$this->fields[] = $c;
 
 		return $c;
@@ -376,7 +377,14 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 	
 	public function index($name, array $columns, $unique = false)
 	{
-		$this->indices[] = array('name' => $name, 'columns' => $columns, 'unique' => $unique);
+		if ($name == 'PRIMARY')
+		{
+			$this->primary = $columns;
+		}
+		else
+		{
+			$this->indices[] = array('name' => $name, 'columns' => $columns, 'unique' => $unique);
+		}
 	}
 }
 
@@ -425,9 +433,9 @@ abstract class Flux_Database_Query_Field extends Flux_Database_Query
 	 */
 	public $field = null;
 
-	public function field($name, $type, $default = null, $allow_null = true, $key = null)
+	public function field($name, $type, $default = null, $allow_null = true)
 	{
-		$this->field = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $key);
+		$this->field = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null);
 
 		return $this->field;
 	}
@@ -524,21 +532,16 @@ class Flux_Database_Query_Helper_TableColumn
 
 	public static function TYPE_VARCHAR($length = 255) { return 'VARCHAR('.intval($length).')'; }
 
-	const KEY_UNIQUE = 'UNIQUE';
-	const KEY_PRIMARY = 'PRIMARY KEY';
-
 	public $name;
 	public $type;
 	public $default;
-	public $key;
 	public $allow_null;
 
-	public function __construct($name, $type, $default = null, $allow_null = true, $key = null)
+	public function __construct($name, $type, $default = null, $allow_null = true)
 	{
 		$this->name = $name;
 		$this->type = $type;
 		$this->default = $default;
-		$this->key = $key;
 		$this->allow_null = $allow_null;
 	}
 }

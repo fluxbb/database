@@ -67,7 +67,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		
 		// Insert if it did not
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys(array_merge($query->values, $query->keys))).') SELECT '.implode(', ', array_values(array_merge($query->values, $query->keys))).' WHERE NOT EXISTS (SELECT 1 FROM '.$table.' WHERE ('.implode(' AND ', $where).'))';
- 		$r = $this->query($sql, $params);
+		$r = $this->query($sql, $params);
 		$insertCount = $r->rowCount();
 		
 		return $insertCount > 0 ? 1 : 2;
@@ -203,8 +203,8 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		
 		$table_info = array(
 			'columns'		=> array(),
-			'primary_key'	=> '',
-			'unique'		=> '',
+			'primary_key'	=> array(),
+			'unique'		=> array(),
 			'indices'		=> array(),
 		);
 
@@ -222,7 +222,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 			if ($row['column_key'] == 'PRI')
 			{
-				$table_info['primary_key'] = $row['column_name'];
+				$table_info['primary_key'][] = $row['column_name'];
 			}
 		}
 

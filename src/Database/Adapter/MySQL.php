@@ -62,11 +62,16 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		try {
 			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 		
+			if (!empty($query->primary))
+			{
+				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
+			}
+			
 			if (!empty($query->indices))
 			{
 				foreach ($query->indices as $index)
 				{
-					$sql .= ' ,'.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$index['name'].' ('.implode(', ', $index['columns']).')';
+					$sql .= ', '.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$index['name'].' ('.implode(', ', $index['columns']).')';
 				}
 			}
 			

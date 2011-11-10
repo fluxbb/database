@@ -585,7 +585,14 @@ abstract class Flux_Database_Adapter
 			$fields[] = $this->compileColumnDefinition($field);
 		
 		try {
-			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields).')';
+			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
+			
+			if (!empty($query->primary))
+			{
+				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
+			}
+			
+			$sql .= ')';
 		
 			$this->exec($sql);
 		
@@ -789,7 +796,7 @@ abstract class Flux_Database_Adapter
 		
 		$table_info = array(
 			'columns'		=> array(),
-			'primary_key'	=> '',
+			'primary_key'	=> array(),
 			'unique'		=> array(),
 			'indices'		=> array(),
 		);
@@ -803,21 +810,16 @@ abstract class Flux_Database_Adapter
 				'default'		=> $row['Default'],
 				'allow_null'	=> $row['Null'] == 'YES',
 			);
-
-			// Save primary key
-			if ($row['Key'] == 'PRI')
-			{
-				$table_info['primary_key'] = $row['Field'];
-			}
 		}
 
 		// Fetch all indices
 		$result = $this->query('SHOW INDEXES FROM '.$table);
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
+			// Save primary key
 			if ($row['Key_name'] == 'PRIMARY')
 			{
-				$table_info['primary_key'] = $row['Column_name'];
+				$table_info['primary_key'][] = $row['Column_name'];
 				continue;
 			}
 
@@ -856,9 +858,6 @@ abstract class Flux_Database_Adapter
 
 		if (!empty($column->default))
 			$sql .= ' DEFAULT '.$column->default;
-
-		if (!empty($column->key))
-			$sql .= ' '.$column->key;
 
 		return $sql;
 	}

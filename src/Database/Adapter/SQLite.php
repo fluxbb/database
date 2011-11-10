@@ -221,7 +221,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		
 		$table_info = array(
 			'columns'		=> array(),
-			'primary_key'	=> '',
+			'primary_key'	=> array(),
 			'unique'		=> array(),
 			'indices'		=> array(),
 		);
@@ -238,7 +238,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 			if ($row['pk'] == 1)
 			{
-				$table_info['primary_key'] = $row['name'];
+				$table_info['primary_key'][] = $row['name'];
 			}
 		}
 
