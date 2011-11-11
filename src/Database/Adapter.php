@@ -813,7 +813,7 @@ abstract class Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $name.' INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY';
+		return $name.' INTEGER UNSIGNED NOT NULL AUTO_INCREMENT';
 	}
 
 	protected function compileJoin(array $joins)
