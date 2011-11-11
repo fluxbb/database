@@ -267,7 +267,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $name.' SERIAL NOT NULL PRIMARY KEY';
+		return $name.' SERIAL NOT NULL';
 	}
 
 	protected function compileConditions($conditions)
