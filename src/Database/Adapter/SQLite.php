@@ -280,7 +280,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
+		return $name.' INTEGER NOT NULL AUTOINCREMENT';
 	}
 
 	protected function compileLimitOffset($limit, $offset)
