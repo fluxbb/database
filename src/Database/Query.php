@@ -383,7 +383,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 		}
 		else
 		{
-			$this->indices[] = array('name' => $name, 'columns' => $columns, 'unique' => $unique);
+			$this->indices[$name] = array('columns' => $columns, 'unique' => $unique);
 		}
 	}
 }

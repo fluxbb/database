@@ -598,10 +598,10 @@ abstract class Flux_Database_Adapter
 		
 			if (!empty($query->indices))
 			{
-				foreach ($query->indices as $index)
+				foreach ($query->indices as $name => $index)
 				{
 					// Add indices manually
-					$q = $this->addIndex($table, $index['name']);
+					$q = $this->addIndex($table, $name);
 					$q->fields = $index['fields'];
 					$q->unique = $index['unique'];
 					$q->run();

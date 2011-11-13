@@ -69,9 +69,9 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 			
 			if (!empty($query->indices))
 			{
-				foreach ($query->indices as $index)
+				foreach ($query->indices as $name => $index)
 				{
-					$sql .= ', '.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$index['name'].' ('.implode(', ', $index['columns']).')';
+					$sql .= ', '.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$name.' ('.implode(', ', $index['columns']).')';
 				}
 			}
 			
