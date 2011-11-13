@@ -63,4 +63,40 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q6 = $this->db->dropTable('test1');
 		$q6->run();
 	}
+	
+	public function testComplexTableInfo()
+	{
+		$q1 = $this->db->createTable('test1');
+		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
+		$r1 = $q1->run();
+		$this->assertEquals(true, $r1);
+		
+		$q2 = $this->db->tableInfo('test1');
+		$r2 = $q2->run();
+		
+		$expected = array(
+			'columns' => array(
+				'id'	=> array(
+					'type'			=> 'INTEGER',
+					'default'		=> '',
+					'allow_null'	=> false,
+				),
+				'number'	=> array(
+					'type'			=> 'INTEGER',
+					'default'		=> '',
+					'allow_null'	=> true,
+				),
+			),
+			'primary_key'	=> array('id'),
+			'unique'		=> array(),
+			'indices'		=> array()
+		);
+		
+		$this->assertEquals($expected, $r2);
+		
+		$q3 = $this->db->dropTable('test1');
+		$r3 = $q3->run();
+		$this->assertTrue($r3);
+	}
 }
