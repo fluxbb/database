@@ -72,25 +72,13 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			throw new Exception('A DROP FIELD query must have a field specified.');
 		
 		try {
-			// Fetch table SQL
-			$result = $this->query('SELECT sql FROM sqlite_master WHERE type = \'table\' AND tbl_name = '.$this->quote($table));
-	
-			$table_sql = $result->fetchColumn();
-			if ($table_sql == NULL)
-			{
-				return false;
-			}
-	
-			// Create temporary table
 			$now = time();
-			// TODO: Use tableInfo data instead to create table
-			$tmptable_sql = str_replace('CREATE TABLE '.$table.' (', 'CREATE TABLE '.$table.'_t'.$now.' (', $table_sql);
-			$this->exec($tmptable_sql);
-	
-			$this->exec('INSERT INTO '.$table.'_t'.$now.' SELECT * FROM '.$table);
-	
 			$table_info = $this->tableInfo($table)->run();
-	
+			
+			// Create temporary table
+			$sql = 'CREATE TABLE '.$table.'_t'.$now.' AS SELECT * FROM '.$table;
+			$this->exec($sql);
+			
 			unset($table_info['columns'][$query->field]);
 			$new_columns = array_keys($table_info['columns']);
 	
