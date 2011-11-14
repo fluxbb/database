@@ -77,8 +77,9 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 			
 			$sql .= ')';
 		
-			// TODO: Maybe allow for this function to overwrite the engine for just one query
-			if (!empty($this->engine))
+			if (!empty($query->engine))
+				$sql .= ' ENGINE = '.$this->quote($query->engine);
+			else if (!empty($this->engine))
 				$sql .= ' ENGINE = '.$this->quote($this->engine);
 			
 			if (!empty($this->charset))

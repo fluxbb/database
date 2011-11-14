@@ -363,6 +363,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 	public $primary = array();
 	
 	public $collation = '';
+	public $engine = '';
 
 	protected function _run(array $params = array())
 	{
