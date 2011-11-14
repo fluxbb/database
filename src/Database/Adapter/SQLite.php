@@ -101,12 +101,14 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
 			}
 	
-			// TODO!
-			if (isset($table_info['unique']))
-				$new_sql .= "\n".$table_info['unique'].',';
+			if (isset($table_info['unique'])) {
+				foreach ($table_info['unique'] as $unique) {
+					$new_sql .= "\n".'UNIQUE ('.implode(', ', $unique).'),';
+				}
+			}
 	
 			if (!empty($table_info['primary_key']))
-				$new_sql .= "\n".'PRIMARY KEY ('.$table_info['primary_key'].'),';
+				$new_sql .= "\n".'PRIMARY KEY ('.implode(', ', $table_info['primary_key']).'),';
 	
 			$new_sql = trim($new_sql, ',')."\n".');';
 	
