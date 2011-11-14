@@ -311,13 +311,13 @@ abstract class Flux_Database_Adapter
 	 * @param string $sql
 	 * @param array[optional] $params
 	 * @return PDOStatement
+	 * @throws PDOException
 	 */
 	public function query($sql, array $params = array())
 	{
 		// Note the start time
 		$query_start = microtime(true);
 
-		// TODO: Handle errors
 		if (empty($params))
 		{
 			$result = $this->getPDO()->query($sql);
