@@ -128,9 +128,13 @@ abstract class Flux_Database_Adapter
 		$prefix = isset($this->options['prefix']) ? $this->options['prefix'] : '';
 		$charset = isset($this->options['charset']) ? $this->options['charset'] : self::DEFAULT_CHARSET;
 
-		// TODO: Handle PDOException properly to avoid displaying connection details
-		$this->pdo = new PDO($dsn, $username, $password, $driver_options);
-		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		// Avoid displaying connection details by re-throwing the exception here
+		try {
+			$this->pdo = new PDO($dsn, $username, $password, $driver_options);
+			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		} catch (PDOException $e) {
+			throw new Exception('Unable to connect to database.');
+		}
 
 		// Fetch the driver type
 		$this->type = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
