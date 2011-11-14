@@ -82,7 +82,11 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 				$sql .= ' ENGINE = '.$this->quote($this->engine);
 			
 			if (!empty($this->charset))
+			{
 				$sql .= ' CHARSET = '.$this->quote($this->charset);
+				if (!empty($query->collation))
+					$sql .= ' COLLATE '.$this->quote($this->charset.'_'.$query->collation);
+			}
 			
 			$this->exec($sql);
 		} catch (PDOException $e) {
