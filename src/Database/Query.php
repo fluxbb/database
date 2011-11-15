@@ -362,7 +362,6 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 	public $indices = array();
 	public $primary = array();
 	
-	public $collation = '';
 	public $engine = '';
 
 	protected function _run(array $params = array())
@@ -539,12 +538,15 @@ class Flux_Database_Query_Helper_TableColumn
 	public $type;
 	public $default;
 	public $allow_null;
+	
+	public $collation = '';
 
-	public function __construct($name, $type, $default = null, $allow_null = true)
+	public function __construct($name, $type, $default = null, $allow_null = true, $collation = '')
 	{
 		$this->name = $name;
 		$this->type = $type;
 		$this->default = $default;
 		$this->allow_null = $allow_null;
+		$this->collation = $collation;
 	}
 }

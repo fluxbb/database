@@ -256,6 +256,22 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return $table_info;
 	}
 	
+	protected function compileColumnDefinition(Flux_Database_Query_Helper_TableColumn $column)
+	{
+		if ($column->type === Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL)
+			return $this->compileColumnSerial($column->name);
+	
+		$sql = $column->name.' '.$this->compileColumnType($column->type);
+	
+		if (!$column->allow_null)
+			$sql .= ' NOT NULL';
+	
+		if (!empty($column->default))
+			$sql .= ' DEFAULT '.$column->default;
+
+		return $sql;
+	}
+	
 	protected function compileColumnType($type)
 	{
 		if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_UINT)

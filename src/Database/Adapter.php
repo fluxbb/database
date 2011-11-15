@@ -26,6 +26,8 @@ abstract class Flux_Database_Adapter
 	protected $queries = array();
 
 	protected $type;
+	
+	protected $charset = 'utf8';
 
 	public $prefix = '';
 
@@ -806,6 +808,9 @@ abstract class Flux_Database_Adapter
 
 		if (!empty($column->default))
 			$sql .= ' DEFAULT '.$column->default;
+		
+		if (!empty($column->collation))
+			$sql .= ' COLLATE '.$this->quote($this->charset.'_'.$column->collation);
 
 		return $sql;
 	}
