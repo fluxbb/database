@@ -369,9 +369,9 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 		return $this->adapter->runCreateTable($this);
 	}
 
-	public function field($name, $type, $default = null, $allow_null = true)
+	public function field($name, $type, $default = null, $allow_null = true, $collation = '')
 	{
-		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null);
+		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $collation);
 		$this->fields[] = $c;
 
 		return $c;
@@ -535,8 +535,10 @@ class Flux_Database_Query_Helper_TableColumn
 	const TYPE_MEDIUMINT = 'MEDIUMINT';
 	const TYPE_MEDIUMINT_UNSIGNED = 'MEDIUMINT UNSIGNED';
 	const TYPE_TINYINT = 'TINYINT';
-	const TYPE_TINYINT_UNSIGNED = 'TINYINT_UNSIGNED';
+	const TYPE_TINYINT_UNSIGNED = 'TINYINT UNSIGNED';
 	const TYPE_SMALLINT = 'SMALLINT';
+	const TYPE_SMALLINT_UNSIGNED = 'SMALLINT UNSIGNED';
+	const TYPE_FLOAT = 'FLOAT';
 
 	public static function TYPE_VARCHAR($length = 255) { return 'VARCHAR('.intval($length).')'; }
 
