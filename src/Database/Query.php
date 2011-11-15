@@ -529,8 +529,13 @@ class Flux_Database_Query_Helper_TableColumn
 	const TYPE_SERIAL = 'SERIAL';
 	const TYPE_TEXT = 'TEXT';
 	const TYPE_BOOL = 'BOOLEAN';
-	const TYPE_UINT = 'INTEGER UNSIGNED';
 	const TYPE_INT = 'INTEGER';
+	const TYPE_INT_UNSIGNED = 'INTEGER UNSIGNED';
+	const TYPE_MEDIUMINT = 'MEDIUMINT';
+	const TYPE_MEDIUMINT_UNSIGNED = 'MEDIUMINT UNSIGNED';
+	const TYPE_TINYINT = 'TINYINT';
+	const TYPE_TINYINT_UNSIGNED = 'TINYINT_UNSIGNED';
+	const TYPE_SMALLINT = 'SMALLINT';
 
 	public static function TYPE_VARCHAR($length = 255) { return 'VARCHAR('.intval($length).')'; }
 
