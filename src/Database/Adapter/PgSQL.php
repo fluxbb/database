@@ -274,9 +274,12 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 	
 	protected function compileColumnType($type)
 	{
-		if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_UINT)
-		{
+		if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_INT_UNSIGNED) {
 			return 'INTEGER';
+		} else if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_MEDIUMINT_UNSIGNED) {
+			return 'MEDIUMINT';
+		} else if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_TINYINT_UNSIGNED) {
+			return 'TINYINT';
 		}
 		return $type;
 	}
