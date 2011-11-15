@@ -528,6 +528,7 @@ class Flux_Database_Query_Helper_TableColumn
 {
 	const TYPE_SERIAL = 'SERIAL';
 	const TYPE_TEXT = 'TEXT';
+	const TYPE_MEDIUMTEXT = 'MEDIUMTEXT';
 	const TYPE_BOOL = 'BOOLEAN';
 	const TYPE_INT = 'INTEGER';
 	const TYPE_INT_UNSIGNED = 'INTEGER UNSIGNED';
