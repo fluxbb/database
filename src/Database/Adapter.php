@@ -753,7 +753,7 @@ abstract class Flux_Database_Adapter
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
 		
 		try {
-			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
+			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;

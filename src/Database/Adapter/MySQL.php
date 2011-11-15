@@ -93,6 +93,28 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		return true;
 	}
 	
+	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('An ADD INDEX query must have a table specified.');
+	
+		if (empty($query->index))
+			throw new Exception('An ADD INDEX query must have an index specified.');
+	
+		if (empty($query->fields))
+			throw new Exception('An ADD INDEX query must have at least one field specified.');
+	
+		try {
+			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
+			$this->exec($sql);
+		} catch (PDOException $e) {
+			return false;
+		}
+	
+		return true;
+	}
+	
 	public function runTableInfo(Flux_Database_Query_TableInfo $query)
 	{
 		$table = $query->getTable();
