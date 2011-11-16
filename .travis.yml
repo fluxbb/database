@@ -12,3 +12,7 @@ before_script:
   - "psql -c 'create database fluxbb__test;' -U postgres"
 
 script: phpunit --bootstrap tests/bootstrap_example.php tests/
+
+notifications:
+  irc:
+    - "irc.freenode.org#fluxbb"
