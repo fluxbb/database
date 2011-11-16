@@ -1,4 +1,4 @@
-# fluxbb-database
+# fluxbb-database ![Build status](https://secure.travis-ci.org/fluxbb/database.png?branch=master)
 A lightweight wrapper around [PHP::PDO](http://www.php.net/manual/en/book.pdo.php), providing both SQL abstraction and an extensible query interface.
 
 Abstraction can be split into 2 different types - driver abstraction, and SQL syntax abstraction. The SQL syntax abstraction we perform has 2 goals:
