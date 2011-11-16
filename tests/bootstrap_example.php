@@ -1,13 +1,13 @@
 <?php
 
 $GLOBALS['DB_MYSQL_DBNAME'] = 'fluxbb__test';
-$GLOBALS['DB_MYSQL_HOST'] = 'localhost';
-$GLOBALS['DB_MYSQL_USER'] = 'root';
+$GLOBALS['DB_MYSQL_HOST'] = '0.0.0.0';
+$GLOBALS['DB_MYSQL_USER'] = '';
 $GLOBALS['DB_MYSQL_PASSWD'] = '';
 
 $GLOBALS['DB_SQLITE_DBNAME'] = ':memory:';
 
 $GLOBALS['DB_PGSQL_DBNAME'] = 'fluxbb__test';
-$GLOBALS['DB_PGSQL_HOST'] = 'localhost';
-$GLOBALS['DB_PGSQL_USER'] = 'root';
+$GLOBALS['DB_PGSQL_HOST'] = '127.0.0.1';
+$GLOBALS['DB_PGSQL_USER'] = 'postgres';
 $GLOBALS['DB_PGSQL_PASSWD'] = '';
