@@ -2,6 +2,7 @@
 
 define('PHPDB_ROOT', realpath(dirname(__FILE__).'/../../src/').'/');
 require_once PHPDB_ROOT.'Database/Adapter.php';
+require_once 'PHPUnit/Framework/TestCase.php';
 
 abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 {
@@ -24,6 +25,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	{
 		$q1 = $this->db->createTable('test1');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
+		$q1->index('PRIMARY', array('id'));
 		$q1->run();
 
 		$q2 = $this->db->tableExists('test1');
@@ -42,6 +44,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1 = $this->db->createTable('test1');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
 		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
+		$q1->index('PRIMARY', array('id'));
 		$q1->run();
 
 		$q2 = $this->db->insert(array('number' => ':num'), 'test1');
@@ -69,6 +72,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1 = $this->db->createTable('test1');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
 		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
+		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
 		$this->assertEquals(true, $r1);
 		
