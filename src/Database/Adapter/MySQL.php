@@ -134,9 +134,12 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		{
 			$table_info['columns'][$row['Field']] = array(
 					'type'			=> $row['Type'],
-					'default'		=> $row['Default'],
 					'allow_null'	=> $row['Null'] == 'YES',
 			);
+			
+			if (($row['Null'] == 'YES' && $row['Key'] != 'PRI') || $row['Default'] != NULL) {
+				$table_info['columns'][$row['Field']]['default'] = $row['Default'];
+			}
 		}
 	
 		// Fetch all indices
@@ -162,9 +165,9 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 					$table_info['unique'][] = array($row['Column_name']);
 				}
 			}
-			else
+			else if ($row['Non_unique'] != 1)
 			{
-				$table_info['unique'][count($table_info['unique']) - 1][] = $row['Column_name'];
+				$table_info['unique'][count($table_info['unique']) -1][] = $row['Column_name'];
 			}
 	
 			$table_info['indices'][$row['Key_name']]['fields'][] = $row['Column_name'];

@@ -83,12 +83,10 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 			'columns' => array(
 				'id'	=> array(
 					'type'			=> 'INTEGER',
-					'default'		=> '',
 					'allow_null'	=> false,
 				),
 				'number'	=> array(
 					'type'			=> 'INTEGER',
-					'default'		=> '',
 					'allow_null'	=> true,
 				),
 			),
