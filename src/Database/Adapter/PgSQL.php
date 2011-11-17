@@ -226,32 +226,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			}
 		}
 
-		// Fetch index information
-		$sql = 'SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name, ix.indisunique FROM pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_constraint c WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND i.oid = c.conindid AND a.attnum = ANY(ix.indkey) AND c.contype != \'p\' AND t.relkind = \'r\' AND t.relname = '.$this->quote($table).' ORDER BY t.relname, i.relname';
-		$result = $this->query($sql);
-
-		// TODO: This relies on PgSQL 9.0, is that realistic? A solution for 8.4 will be different.
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
-		{
-			if (!isset($table_info['indices'][$row['index_name']]))
-			{
-				$table_info['indices'][$row['index_name']] = array(
-					'fields'	=> array(),
-					'unique'	=> $row['indisunique'],
-				);
-
-				if ($row['indisunique'])
-				{
-					$table_info['unique'][] = $row['column_name'];
-				}
-			}
-			else
-			{
-				$table_info['unique'][count($table_info['unique']) - 1][] = $row['column_name'];
-			}
-
-			$table_info['indices'][$row['index_name']]['fields'][] = $row['column_name'];
-		}
+		// TODO: Fetch index information (and make it work on 8.4)
 		
 		return $table_info;
 	}
