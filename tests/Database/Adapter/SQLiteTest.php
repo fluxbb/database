@@ -12,7 +12,11 @@ class Flux_Database_Adapter_SQLiteTest extends Flux_Database_AdapterTest
               'The SQLite driver cannot be loaded.'
             );
         }
+        
+        $conf = array(
+        		'dbname'	=> $_ENV['DB_SQLITE_DBNAME'],
+        );
 
-		return Flux_Database_Adapter::factory('SQLite', array('dbname' => DB_SQLITE_DBNAME));
+		return Flux_Database_Adapter::factory('SQLite', $conf);
 	}
 }

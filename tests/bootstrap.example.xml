@@ -7,16 +7,16 @@
   </testsuites>
   
   <php>
-  	<const name="DB_MYSQL_DBNAME" value="fluxbb__test" />
-	<const name="DB_MYSQL_HOST" value="0.0.0.0" />
-	<const name="DB_MYSQL_USER" value="" />
-	<const name="DB_MYSQL_PASSWD" value="" />
+  	<env name="DB_MYSQL_DBNAME" value="fluxbb__test" />
+	<env name="DB_MYSQL_HOST" value="0.0.0.0" />
+	<env name="DB_MYSQL_USER" value="" />
+	<env name="DB_MYSQL_PASSWD" value="" />
 
-	<const name="DB_SQLITE_DBNAME" value=":memory:" />
+	<env name="DB_SQLITE_DBNAME" value=":memory:" />
 
-	<const name="DB_PGSQL_DBNAME" value="fluxbb__test" />
-	<const name="DB_PGSQL_HOST" value="127.0.0.1" />
-	<const name="DB_PGSQL_USER" value="postgres" />
-	<const name="DB_PGSQL_PASSWD" value="" />
+	<env name="DB_PGSQL_DBNAME" value="fluxbb__test" />
+	<env name="DB_PGSQL_HOST" value="127.0.0.1" />
+	<env name="DB_PGSQL_USER" value="postgres" />
+	<env name="DB_PGSQL_PASSWD" value="" />
   </php>
 </phpunit>

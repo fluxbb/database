@@ -12,7 +12,21 @@ class Flux_Database_Adapter_MySQLTest extends Flux_Database_AdapterTest
               'The MySQL driver cannot be loaded.'
             );
         }
-
-		return Flux_Database_Adapter::factory('MySQL', array('dbname' => DB_MYSQL_DBNAME, 'username' => DB_MYSQL_USER, 'password' => DB_MYSQL_PASSWD));
+        
+		$conf = array(
+			'dbname'	=> $_ENV['DB_MYSQL_DBNAME'],
+			'host'		=> $_ENV['DB_MYSQL_HOST'],
+			'username'	=> $_ENV['DB_MYSQL_USER'],
+			'password'	=> $_ENV['DB_MYSQL_PASSWD'],
+		);
+		
+		$adapter = Flux_Database_Adapter::factory('MySQL', $conf);
+		
+		$result = $adapter->query('SHOW TABLES');
+		while ($table = $result->fetchColumn()) {
+			$adapter->exec('DROP TABLE '.$table);
+		}
+		
+		return $adapter;
 	}
 }
