@@ -13,6 +13,6 @@ class Flux_Database_Adapter_MySQLTest extends Flux_Database_AdapterTest
             );
         }
 
-		return Flux_Database_Adapter::factory('MySQL', array('dbname' => $GLOBALS['DB_MYSQL_DBNAME'], 'username' => $GLOBALS['DB_MYSQL_USER'], 'password' => $GLOBALS['DB_MYSQL_PASSWD']));
+		return Flux_Database_Adapter::factory('MySQL', array('dbname' => DB_MYSQL_DBNAME, 'username' => DB_MYSQL_USER, 'password' => DB_MYSQL_PASSWD));
 	}
 }

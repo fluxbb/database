@@ -11,7 +11,7 @@ before_script:
   - "mysql -e 'create database fluxbb__test;'"
   - "psql -c 'create database fluxbb__test;' -U postgres"
 
-script: phpunit --bootstrap tests/bootstrap_example.php tests/
+script: phpunit --bootstrap tests/bootstrap.example.php tests/
 
 notifications:
   irc:

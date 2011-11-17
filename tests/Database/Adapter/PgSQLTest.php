@@ -13,6 +13,6 @@ class Flux_Database_Adapter_PgSQLTest extends Flux_Database_AdapterTest
             );
         }
 
-		return Flux_Database_Adapter::factory('PgSQL', array('dbname' => $GLOBALS['DB_PGSQL_DBNAME'], 'username' => $GLOBALS['DB_PGSQL_USER'], 'password' => $GLOBALS['DB_PGSQL_PASSWD']));
+		return Flux_Database_Adapter::factory('PgSQL', array('dbname' => DB_PGSQL_DBNAME, 'username' => DB_PGSQL_USER, 'password' => DB_PGSQL_PASSWD));
 	}
 }
