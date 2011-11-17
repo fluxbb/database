@@ -45,6 +45,56 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		
 		return true;
 	}
+	
+	public function runCreateTable(Flux_Database_Query_CreateTable $query)
+	{
+		$table = $query->getTable();
+		if (empty($table))
+			throw new Exception('A CREATE TABLE query must have a table specified.');
+	
+		if (empty($query->fields))
+			throw new Exception('A CREATE TABLE query must contain at least one field.');
+	
+		$fields = array();
+		$has_serial = false;
+		foreach ($query->fields as $field) {
+			// Workaround: AUTOINCREMENT columns have to be declared PRIMARY KEY in SQLite.
+			// Thus we cannot declare the PRIMARY KEY later on.
+			if ($field->type == Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL) {
+				$has_serial = true;
+			}
+			$fields[] = $this->compileColumnDefinition($field);
+		}
+	
+		try {
+			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
+		
+			if (!empty($query->primary) && !$has_serial)
+			{
+				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
+			}
+		
+			$sql .= ')';
+		
+			$this->exec($sql);
+		
+			if (!empty($query->indices))
+			{
+				foreach ($query->indices as $name => $index)
+				{
+					// Add indices manually
+					$q = $this->addIndex($table, $name);
+					$q->fields = $index['fields'];
+					$q->unique = $index['unique'];
+					$q->run();
+				}
+			}
+		} catch (PDOException $e) {
+			return false;
+		}
+	
+		return true;
+	}
 
 	public function runTableExists(Flux_Database_Query_TableExists $query)
 	{
@@ -270,7 +320,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 
 	protected function compileColumnSerial($name)
 	{
-		return $name.' INTEGER NOT NULL AUTOINCREMENT';
+		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
 	}
 
 	protected function compileLimitOffset($limit, $offset)
