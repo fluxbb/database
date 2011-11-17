@@ -41,42 +41,42 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 
 	public function testFillAndEmptyTable()
 	{
-		$q1 = $this->db->createTable('test1');
+		$q1 = $this->db->createTable('test2');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
 		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
 		$q1->index('PRIMARY', array('id'));
 		$q1->run();
 
-		$q2 = $this->db->insert(array('number' => ':num'), 'test1');
+		$q2 = $this->db->insert(array('number' => ':num'), 'test2');
 		$params = array(':num' => 4);
 		$r2 = $q2->run($params);
 		$this->assertEquals(1, $r2);
 
-		$q3 = $this->db->select(array('number'), 'test1');
+		$q3 = $this->db->select(array('number'), 'test2');
 		$r3 = $q3->run();
 		$this->assertEquals(1, count($r3));
 		$this->assertEquals(4, $r3[0]['number']);
 
-		$q4 = $this->db->truncate('test1');
+		$q4 = $this->db->truncate('test2');
 		$q4->run();
 
 		$r5 = $q3->run();
 		$this->assertEquals(0, count($r5));
 
-		$q6 = $this->db->dropTable('test1');
+		$q6 = $this->db->dropTable('test2');
 		$q6->run();
 	}
 	
 	public function testComplexTableInfo()
 	{
-		$q1 = $this->db->createTable('test1');
+		$q1 = $this->db->createTable('test3');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
 		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
 		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
-		$this->assertEquals(true, $r1);
+		$this->assertTrue($r1);
 		
-		$q2 = $this->db->tableInfo('test1');
+		$q2 = $this->db->tableInfo('test3');
 		$r2 = $q2->run();
 		
 		$expected = array(
@@ -97,8 +97,37 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		
 		$this->assertEquals($expected, $r2);
 		
-		$q3 = $this->db->dropTable('test1');
+		$q3 = $this->db->dropTable('test3');
 		$r3 = $q3->run();
 		$this->assertTrue($r3);
+	}
+	
+	public function testDefaultValues()
+	{
+		$q1 = $this->db->createTable('test4');
+		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), '', true);
+		$q1->field('default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), '', false);
+		$q1->field('no_default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, true);
+		$q1->field('no_default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, false);
+		$q1->index('PRIMARY', array('id'));
+		$r1 = $q1->run();
+		
+		$q2 = $this->db->tableInfo('test4');
+		$r2 = $q2->run();
+		
+		$this->assertTrue(isset($r2['columns']['default_null']['default']));
+		$this->assertEquals($r2['columns']['default_null']['default'], '');
+		
+		$this->assertTrue(isset($r2['columns']['default_not_null']['default']));
+		$this->assertEquals($r2['columns']['default_not_null']['default'], '');
+		
+		$this->assertTrue(isset($r2['columns']['no_default_null']['default']));
+		$this->assertNull($r2['columns']['no_default_null']['default']);
+		
+		$this->assertFalse(isset($r2['columns']['no_default_not_null']['default']));
+		
+		$q3 = $this->db->dropTable('test4');
+		$r3 = $q3->run();
 	}
 }
