@@ -137,7 +137,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 					'allow_null'	=> $row['Null'] == 'YES',
 			);
 			
-			if (($row['Null'] == 'YES' && $row['Key'] != 'PRI') || $row['Default'] != NULL) {
+			if ($row['Default'] !== NULL || $row['Null'] == 'YES') {
 				$table_info['columns'][$row['Field']]['default'] = $row['Default'];
 			}
 		}

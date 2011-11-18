@@ -272,9 +272,18 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		{
 			$table_info['columns'][$row['name']] = array(
 				'type'			=> $row['type'],
-				'default'		=> $row['dflt_value'],
 				'allow_null'	=> $row['notnull'] == 0,
 			);
+			
+			if ($row['dflt_value'] !== NULL) {
+				if ($row['dflt_value'] == '\'\'') {
+					$row['dflt_value'] = '';
+				} else if ($row['dflt_value'] == 'NULL') {
+					$row['dflt_value'] = NULL;
+				}
+				
+				$table_info['columns'][$row['name']]['default'] = $row['dflt_value'];
+			}
 
 			if ($row['pk'] == 1)
 			{

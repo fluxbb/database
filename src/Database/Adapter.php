@@ -187,6 +187,11 @@ abstract class Flux_Database_Adapter
 	 */
 	public function quote($str)
 	{
+		if (is_null($str)) {
+			return 'NULL';
+		} else if (is_int($str)) {
+			return $str;
+		}
 		$quoted_str = $this->getPDO()->quote($str);
 		if ($quoted_str === false)
 			$quoted_str = '\''.addslashes($str).'\'';
@@ -806,8 +811,10 @@ abstract class Flux_Database_Adapter
 		if (!$column->allow_null)
 			$sql .= ' NOT NULL';
 
-		if (!empty($column->default))
-			$sql .= ' DEFAULT '.$column->default;
+		if ($column->default !== NULL)
+			$sql .= ' DEFAULT '.$this->quote($column->default);
+		else if ($column->allow_null)
+			$sql .= ' DEFAULT NULL';
 		
 		if (!empty($column->collation))
 			$sql .= ' COLLATE '.$this->quote($this->charset.'_'.$column->collation);

@@ -116,16 +116,16 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q2 = $this->db->tableInfo('test4');
 		$r2 = $q2->run();
 		
-		$this->assertTrue(isset($r2['columns']['default_null']['default']));
-		$this->assertEquals($r2['columns']['default_null']['default'], '');
+		$this->assertTrue(array_key_exists('default', $r2['columns']['default_null']));
+		$this->assertEquals('', $r2['columns']['default_null']['default']);
 		
-		$this->assertTrue(isset($r2['columns']['default_not_null']['default']));
-		$this->assertEquals($r2['columns']['default_not_null']['default'], '');
+		$this->assertTrue(array_key_exists('default', $r2['columns']['default_not_null']));
+		$this->assertEquals('', $r2['columns']['default_not_null']['default']);
 		
-		$this->assertTrue(isset($r2['columns']['no_default_null']['default']));
+		$this->assertTrue(array_key_exists('default', $r2['columns']['no_default_null']));
 		$this->assertNull($r2['columns']['no_default_null']['default']);
 		
-		$this->assertFalse(isset($r2['columns']['no_default_not_null']['default']));
+		$this->assertFalse(array_key_exists('default', $r2['columns']['no_default_not_null']));
 		
 		$q3 = $this->db->dropTable('test4');
 		$r3 = $q3->run();
