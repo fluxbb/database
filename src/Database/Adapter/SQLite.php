@@ -281,8 +281,8 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			);
 			
 			if ($row['dflt_value'] !== NULL) {
-				if ($row['dflt_value'] == '\'\'') {
-					$row['dflt_value'] = '';
+				if (substr($row['dflt_value'], 0, 1) == '\'' && substr($row['dflt_value'], -1) == '\'') {
+					$row['dflt_value'] = substr($row['dflt_value'], 1, -1);
 				} else if ($row['dflt_value'] == 'NULL') {
 					$row['dflt_value'] = NULL;
 				}
