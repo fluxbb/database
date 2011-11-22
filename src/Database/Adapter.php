@@ -613,8 +613,9 @@ abstract class Flux_Database_Adapter
 				{
 					// Add indices manually
 					$q = $this->addIndex($table, $name);
-					$q->fields = $index['fields'];
+					$q->fields = $index['columns'];
 					$q->unique = $index['unique'];
+					$q->usePrefix = false;
 					$q->run();
 				}
 			}
