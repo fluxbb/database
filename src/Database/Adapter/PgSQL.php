@@ -232,13 +232,20 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
-			$table_info['indices'][$row['index_name']] = array(
-				'fields'	=> explode(',', $row['index_columns']),
-				'unique'	=> $row['indisunique'] == 't',
-			);
+			// Remove table name prefix
+			$row['index_name'] = substr($row['index_name'], strlen($table.'_'));
 			
-			if ($row['indisunique'] == 't') {
-				$table_info['unique'][] = explode(',', $row['index_columns']);
+			if ($row['index_name'] != 'pkey') {
+				$table_info['indices'][$row['index_name']] = array(
+					'fields'	=> explode(',', $row['index_columns']),
+					'unique'	=> $row['indisunique'] == 't',
+				);
+				
+				if ($row['indisunique'] == 't') {
+					$table_info['unique'][] = explode(',', $row['index_columns']);
+				}
+			} else {
+				$table_info['primary_key'] = explode(',', $row['index_columns']);
 			}
 		}
 		
