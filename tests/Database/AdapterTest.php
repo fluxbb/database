@@ -88,6 +88,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				'number'	=> array(
 					'type'			=> 'INTEGER',
 					'allow_null'	=> true,
+					'default'		=> null,
 				),
 			),
 			'primary_key'	=> array('id'),
@@ -106,21 +107,22 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	{
 		$q1 = $this->db->createTable('test4');
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
-		$q1->field('default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), '', true);
-		$q1->field('default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), '', false);
+		$q1->field('default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), 'abc', true);
+		$q1->field('default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), 'abc', false);
 		$q1->field('no_default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, true);
 		$q1->field('no_default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, false);
 		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
+		$this->assertTrue($r1);
 		
 		$q2 = $this->db->tableInfo('test4');
 		$r2 = $q2->run();
 		
 		$this->assertTrue(array_key_exists('default', $r2['columns']['default_null']));
-		$this->assertEquals('', $r2['columns']['default_null']['default']);
+		$this->assertEquals('abc', $r2['columns']['default_null']['default']);
 		
 		$this->assertTrue(array_key_exists('default', $r2['columns']['default_not_null']));
-		$this->assertEquals('', $r2['columns']['default_not_null']['default']);
+		$this->assertEquals('abc', $r2['columns']['default_not_null']['default']);
 		
 		$this->assertTrue(array_key_exists('default', $r2['columns']['no_default_null']));
 		$this->assertNull($r2['columns']['no_default_null']['default']);
