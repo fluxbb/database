@@ -215,17 +215,23 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table_info['columns'][$row['column_name']] = array(
-				'type'			=> $row['column_type'],
-				'default'		=> $row['column_default'],
+				'type'			=> $row['data_type'],
 				'allow_null'	=> $row['is_nullable'] == 'YES',
 			);
-
-			if ($row['column_key'] == 'PRI')
-			{
-				$table_info['primary_key'][] = $row['column_name'];
+			
+			if (substr($row['column_default'], 0, 8) != 'nextval(') {
+				if ($row['column_default'] !== NULL || $row['is_nullable'] == 'YES') {
+					// Remove weird PgSQL default value formatting
+					$row['column_default'] = preg_replace('%\'(.*)\'::character varying%', '$1', $row['column_default']);
+					if ($row['column_default'] == 'NULL::character varying') {
+						$row['column_default'] = NULL;
+					}
+					
+					$table_info['columns'][$row['column_name']]['default'] = $row['column_default'];
+				}
 			}
 		}
-
+		
 		// Fetch index information
 		$sql = 'SELECT t.relname AS table_name, ix.relname AS index_name, array_to_string(array_agg(col.attname), \',\') AS index_columns, i.indisunique FROM pg_index i JOIN pg_class ix ON ix.oid = i.indexrelid JOIN pg_class t on t.oid = i.indrelid JOIN (SELECT ic.indexrelid, unnest(ic.indkey) AS colnum FROM pg_index ic) icols ON icols.indexrelid = i.indexrelid JOIN pg_attribute col ON col.attrelid = t.oid and col.attnum = icols.colnum WHERE t.relname = '.$this->quote($table).' GROUP BY t.relname, ix.relname, i.indisunique ORDER BY t.relname, ix.relname';
 		$result = $this->query($sql);
@@ -262,8 +268,10 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (!$column->allow_null)
 			$sql .= ' NOT NULL';
 	
-		if (!empty($column->default))
-			$sql .= ' DEFAULT '.$column->default;
+		if ($column->default !== NULL)
+			$sql .= ' DEFAULT '.$this->quote($column->default);
+		else if ($column->allow_null)
+			$sql .= ' DEFAULT NULL';
 
 		return $sql;
 	}
