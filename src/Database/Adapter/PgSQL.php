@@ -115,11 +115,16 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$new_field = clone $query->field;
 		$new_field->name = $new_field->name.'_t'.$now;
 		$subquery->field = $new_field;
+		$subquery->usePrefix = false;
 		$subquery->run();
 
 		try {
 			$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
-			$this->dropField($table, $query->field->name)->run();
+			
+			$q = $this->dropField($table, $query->field->name);
+			$q->usePrefix = false;
+			$q->run();
+			
 			$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 		} catch (PDOException $e) {
 			return false;

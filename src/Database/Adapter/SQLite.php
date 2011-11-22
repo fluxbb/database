@@ -86,6 +86,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 					$q = $this->addIndex($table, $name);
 					$q->fields = $index['fields'];
 					$q->unique = $index['unique'];
+					$q->usePrefix = false;
 					$q->run();
 				}
 			}
@@ -123,7 +124,9 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		
 		try {
 			$now = time();
-			$table_info = $this->tableInfo($table)->run();
+			$q = $this->tableInfo($table);
+			$q->usePrefix = false;
+			$table_info = $q->run();
 			
 			// Create temporary table
 			$sql = 'CREATE TABLE '.$table.'_t'.$now.' AS SELECT * FROM '.$table;
@@ -163,7 +166,9 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				{
 					if (!in_array($query->field, $cur_index['fields']))
 					{
-						$this->dropIndex($table, $index_name)->run();
+						$q = $this->dropIndex($table, $index_name);
+						$q->usePrefix = false;
+						$q->run();
 					}
 				}
 			}
