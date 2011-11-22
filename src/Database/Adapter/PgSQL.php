@@ -226,7 +226,21 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			}
 		}
 
-		// TODO: Fetch index information (and make it work on 8.4)
+		// Fetch index information
+		$sql = 'SELECT t.relname AS table_name, ix.relname AS index_name, array_to_string(array_agg(col.attname), \',\') AS index_columns, i.indisunique FROM pg_index i JOIN pg_class ix ON ix.oid = i.indexrelid JOIN pg_class t on t.oid = i.indrelid JOIN (SELECT ic.indexrelid, unnest(ic.indkey) AS colnum FROM pg_index ic) icols ON icols.indexrelid = i.indexrelid JOIN pg_attribute col ON col.attrelid = t.oid and col.attnum = icols.colnum WHERE t.relname = '.$this->quote($table).' GROUP BY t.relname, ix.relname, i.indisunique ORDER BY t.relname, ix.relname';
+		$result = $this->query($sql);
+		
+		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		{
+			$table_info['indices'][$row['index_name']] = array(
+				'fields'	=> explode(',', $row['index_columns']),
+				'unique'	=> $row['indisunique'] == 't',
+			);
+			
+			if ($row['indisunique'] == 't') {
+				$table_info['unique'][] = explode(',', $row['index_columns']);
+			}
+		}
 		
 		return $table_info;
 	}
