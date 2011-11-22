@@ -214,7 +214,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		);
 
 		// Fetch column information
-		$sql = 'SELECT column_name FROM information_schema.columns WHERE table_name = '.$this->quote($table).' AND table_schema = '.$this->quote($this->options['dbname']).' ORDER BY ordinal_position ASC';
+		$sql = 'SELECT column_name, data_type, column_default, is_nullable FROM information_schema.columns WHERE table_name = '.$this->quote($table).' ORDER BY ordinal_position ASC';
 		$result = $this->query($sql);
 
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
