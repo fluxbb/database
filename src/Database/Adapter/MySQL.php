@@ -18,6 +18,11 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		parent::__construct($options);
 
 		$this->engine = isset($options['engine']) ? $options['engine'] : self::DEFAULT_ENGINE;
+		
+		if (!isset($this->options['driver_options'])) {
+			$this->options['driver_options'] = array();
+		}
+		$this->options['driver_options'][PDO::MYSQL_ATTR_FOUND_ROWS] = true;
 	}
 
 	public function generateDsn()
