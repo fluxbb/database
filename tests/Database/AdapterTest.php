@@ -20,6 +20,67 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	 * @return Flux_Database_Adapter
 	 */
 	abstract public function createAdapter();
+	
+	public function testCRUD()
+	{
+		$q1 = $this->db->createTable('test1');
+		$q1->field('username', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(40));
+		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
+		$r1 = $q1->run();
+		
+		$this->assertTrue($r1);
+		
+		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
+		$params = array(':username' => 'lie2815', 'name' => 'Franz');
+		$r2_1 = $q2->run($params);
+		$params = array(':username' => 'reines', 'name' => 'Jamie');
+		$r2_2 = $q2->run($params);
+		
+		$this->assertEquals(1, $r2_1);
+		$this->assertEquals(1, $r2_2);
+		
+		$q3 = $this->db->update(array('name' => ':name'), 'test1');
+		$q3->where = 'username = :username';
+		$params = array(':username' => 'lie2815', 'name' => 'Franz Liedke');
+		$r3_1 = $q3->run($params);
+		$r3_2 = $q3->run($params);
+		
+		// Match found rows, not replaced ones
+		$this->assertEquals(1, $r3_1);
+		$this->assertEquals(1, $r3_2);
+		
+		$q4 = $this->db->select(array('*'), 'test1');
+		$q4->order = array('username ASC');
+		$r4 = $q4->run();
+		
+		$expected = array(
+			array(
+				'username'	=> 'lie2815',
+				'name'		=> 'Franz Liedke',
+			),
+			array(
+				'username'	=> 'reines',
+				'name'		=> 'Jamie',
+			),
+		);
+		
+		$this->assertEquals($expected, $r4);
+		
+		$q5 = $this->db->delete('test1');
+		$q5->where = 'username = :username';
+		$params = array(':username' => 'lie2815');
+		$r5_1 = $q5->run($params);
+		$params = array(':username' => 'reines');
+		$r5_2 = $q5->run($params);
+		
+		$this->assertEquals(1, $r5_1);
+		$this->assertEquals(1, $r5_2);
+		
+		$q6 = $this->db->dropTable('test1');
+		$r6 = $q6->run();
+		
+		$this->assertTrue($r6);
+	}
 
 	public function testCreateAndRemoveTable()
 	{
