@@ -133,7 +133,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table_info['columns'][$row['Field']] = array(
-					'type'			=> $row['Type'],
+					'type'			=> $this->understandColumnType($row['Type']),
 					'allow_null'	=> $row['Null'] == 'YES',
 			);
 			
@@ -174,5 +174,15 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		}
 	
 		return $table_info;
+	}
+	
+	protected function understandColumnType($str)
+	{
+		// TODO: Complete implementation
+		if (preg_match('%int\(.+%', $str)) {
+			return 'INTEGER';
+		}
+		
+		return $str;
 	}
 }

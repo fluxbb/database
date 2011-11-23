@@ -220,7 +220,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
 			$table_info['columns'][$row['column_name']] = array(
-				'type'			=> $row['data_type'],
+				'type'			=> $this->understandColumnType($row['data_type']),
 				'allow_null'	=> $row['is_nullable'] == 'YES',
 			);
 			
@@ -291,6 +291,16 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			return 'TINYINT';
 		}
 		return $type;
+	}
+	
+	protected function understandColumnType($str)
+	{
+		// TODO: Complete implementation
+		if ($str == 'integer') {
+			return 'INTEGER';
+		}
+		
+		return $str;
 	}
 
 	protected function compileColumnSerial($name)
