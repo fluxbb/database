@@ -31,9 +31,9 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($r1);
 		
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
-		$params = array(':username' => 'lie2815', 'name' => 'Franz');
+		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r2_1 = $q2->run($params);
-		$params = array(':username' => 'reines', 'name' => 'Jamie');
+		$params = array(':username' => 'reines', ':name' => 'Jamie');
 		$r2_2 = $q2->run($params);
 		
 		$this->assertEquals(1, $r2_1);
@@ -41,7 +41,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		
 		$q3 = $this->db->update(array('name' => ':name'), 'test1');
 		$q3->where = 'username = :username';
-		$params = array(':username' => 'lie2815', 'name' => 'Franz Liedke');
+		$params = array(':username' => 'lie2815', ':name' => 'Franz Liedke');
 		$r3_1 = $q3->run($params);
 		$r3_2 = $q3->run($params);
 		
@@ -77,6 +77,57 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1, $r5_2);
 		
 		$q6 = $this->db->dropTable('test1');
+		$r6 = $q6->run();
+		
+		$this->assertTrue($r6);
+	}
+	
+	public function testReplaceQuery()
+	{
+		$q1 = $this->db->createTable('test2');
+		$q1->field('username', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(40));
+		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
+		$q1->index('PRIMARY', array('username'));
+		$r1 = $q1->run();
+		
+		$this->assertTrue($r1);
+		
+		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test2');
+		$params = array(':username' => 'reines', ':name' => 'Jamie');
+		$r2 = $q2->run($params);
+		
+		$this->assertEquals(1, $r2);
+		
+		$q3 = $this->db->replace(array('name' => ':name'), 'test2', array('username' => ':username'));
+		$params = array(':username' => 'lie2815', ':name' => 'Franz');
+		$r3 = $q3->run($params);
+		
+		$this->assertEquals(1, $r3);
+		
+		$q4 = $this->db->replace(array('name' => ':name'), 'test2', array('username' => ':username'));
+		$params = array(':username' => 'lie2815', ':name' => 'Franz Liedke');
+		$r4 = $q4->run($params);
+		
+		$this->assertEquals(2, $r4);
+		
+		$q5 = $this->db->select(array('username', 'name'), 'test2');
+		$q5->order = array('username ASC');
+		$r5 = $q5->run();
+		
+		$expected = array(
+			array(
+				'username'	=> 'lie2815',
+				'name'		=> 'Franz Liedke',
+			),
+			array(
+				'username'	=> 'reines',
+				'name'		=> 'Jamie',
+			),
+		);
+		
+		$this->assertEquals($expected, $r5);
+		
+		$q6 = $this->db->dropTable('test2');
 		$r6 = $q6->run();
 		
 		$this->assertTrue($r6);
