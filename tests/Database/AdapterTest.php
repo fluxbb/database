@@ -185,6 +185,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
 		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
 		$q1->index('PRIMARY', array('id'));
+		$q1->index('number_idx', array('number'), true);
 		$r1 = $q1->run();
 		$this->assertTrue($r1);
 		
@@ -204,8 +205,15 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				),
 			),
 			'primary_key'	=> array('id'),
-			'unique'		=> array(),
-			'indices'		=> array()
+			'unique'		=> array(
+				array('number'),
+			),
+			'indices'		=> array(
+				'number_idx' => array(
+					'fields'	=> array('number'),
+					'unique'	=> true,
+				),
+			),
 		);
 		
 		$this->assertEquals($expected, $r2);

@@ -157,6 +157,11 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 				$table_info['primary_key'][] = $row['Column_name'];
 				continue;
 			}
+			
+			// Remove table name prefix
+			if (substr($row['Key_name'], 0, strlen($table.'_')) == $table.'_') {
+				$row['Key_name'] = substr($row['Key_name'], strlen($table.'_'));
+			}
 	
 			if (!isset($table_info['indices'][$row['Key_name']]))
 			{

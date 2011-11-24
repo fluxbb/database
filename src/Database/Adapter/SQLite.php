@@ -84,7 +84,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				{
 					// Add indices manually
 					$q = $this->addIndex($table, $name);
-					$q->fields = $index['fields'];
+					$q->fields = $index['columns'];
 					$q->unique = $index['unique'];
 					$q->usePrefix = false;
 					$q->run();
@@ -304,10 +304,13 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			{
 				continue;
 			}
+			
+			// Remove table name prefix
+			if (substr($cur_index['name'], 0, strlen($table.'_')) == $table.'_') {
+				$index_name = substr($cur_index['name'], strlen($table.'_'));
+			}
 
-			$r2 = $this->query('PRAGMA index_info('.$cur_index['name'].')');
-
-			$table_info['indices'][$cur_index['name']] = array(
+			$table_info['indices'][$index_name] = array(
 				'fields'	=> array(),
 				'unique'	=> $cur_index['unique'] != 0,
 			);
@@ -315,9 +318,10 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			if ($cur_index['unique'] != 0)
 			{
 				$table_info['unique'][] = array();
-				$k = count($table_info) - 1;
+				$k = count($table_info['unique']) - 1;
 			}
 
+			$r2 = $this->query('PRAGMA index_info('.$cur_index['name'].')');
 			foreach ($r2->fetchAll(PDO::FETCH_ASSOC) as $row)
 			{
 				if ($cur_index['unique'] != 0)
@@ -325,7 +329,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 					$table_info['unique'][$k][] = $row['name'];
 				}
 
-				$table_info['indices'][$cur_index['name']]['fields'][] = $row['name'];
+				$table_info['indices'][$index_name]['fields'][] = $row['name'];
 			}
 		}
 
