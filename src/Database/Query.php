@@ -17,9 +17,27 @@ abstract class Flux_Database_Query
 	 */
 	public $adapter = null;
 
+	/**
+	 * The table that is affected by the query.
+	 * 
+	 * @var string
+	 */
 	protected $table = '';
+	
+	/**
+	 * Whether or not the global table prefix should automatically be applied.
+	 * 
+	 * Defaults to true.
+	 * 
+	 * @var bool
+	 */
 	public $usePrefix = true;
 
+	/**
+	 * Whether the query has already been run before.
+	 * 
+	 * @var bool
+	 */
 	protected $run = false;
 
 	public function __construct(Flux_Database_Adapter $adapter)
@@ -27,16 +45,39 @@ abstract class Flux_Database_Query
 		$this->adapter = $adapter;
 	}
 
+	/**
+	 * Set the table that is affected by the query.
+	 * 
+	 * @param string $table
+	 * @return void
+	 */
 	public function setTable($table)
 	{
 		$this->table = $table;
 	}
 
+	/**
+	 * Get the table that is affected by the query.
+	 * 
+	 * If {@see usePrefix} is set to true, the global prefix will be prepended.
+	 * 
+	 * @return string
+	 */
 	public function getTable()
 	{
 		return $this->usePrefix ? $this->adapter->prefix.$this->table : $this->table;
 	}
 
+	/**
+	 * Execute the query with the given parameters.
+	 * 
+	 * If this method is called twice on the same object, this will throw an
+	 * exception.
+	 * 
+	 * @param array $params
+	 * @throws Exception
+	 * @return mixed
+	 */
 	public function run(array $params = array())
 	{
 		// This query type does not support multiple executions with different parameters
@@ -49,6 +90,15 @@ abstract class Flux_Database_Query
 		return $this->_run($params);
 	}
 
+	/**
+	 * Template method for running the given query.
+	 * 
+	 * This method should be overwritten by subclasses. It needs to pass the
+	 * given parameters to the database adapter and execute an SQL query.
+	 * 
+	 * @param array $params
+	 * @return mixed
+	 */
 	abstract protected function _run(array $params = array());
 }
 
@@ -60,8 +110,22 @@ abstract class Flux_Database_Query
  */
 abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 {
+	/**
+	 * The handle of the pre-compiled query, as returned by the adapter.
+	 * 
+	 * @var int
+	 */
 	protected $handle = null;
-
+	
+	/**
+	 * Execute the query with the given parameters.
+	 * 
+	 * If this method is called multiple times, changes to attributes in the
+	 * meantime will be ignored, as the query has already been compiled.
+	 *
+	 * @param array $params
+	 * @return mixed
+	 */
 	public function run(array $params = array())
 	{
 		// Compile first, if necessary
@@ -74,12 +138,23 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 		return $this->adapter->execute($this->handle, $params);
 	}
 
+	/**
+	 * Template method for running the given query.
+	 *
+	 * This function will not have any effect if overwritten by subclasses.
+	 *
+	 * @param array $params
+	 * @return void
+	 */
 	protected function _run(array $params = array())
 	{ }
 
 	/**
 	 * Compile the query to be run.
-	 *
+	 * 
+	 * This method should be overwritten by subclasses. It needs to assemble
+	 * the SQL for the query using the database adapter and return the SQL.
+	 * 
 	 * @return string
 	 */
 	abstract public function compile();
@@ -94,12 +169,14 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
  * Represents a plain SQL query which bypasses the abstraction layer.
  *
  * This will also ignore the value of the $table field, even if set.
- *
- * @param string $sql
- * 		The plain SQL query to represent.
  */
 class Flux_Database_Query_Direct extends Flux_Database_Query
 {
+	/**
+	 * The plain SQL query to represent.
+	 * 
+	 * @var string
+	 */
 	public $sql = '';
 
 	protected function _run(array $params = array())
@@ -115,24 +192,48 @@ class Flux_Database_Query_Direct extends Flux_Database_Query
 
 /**
  * Represents a SELECT query. Used to fetch data from the database.
- *
- * @param array $fields
- * 		An array of field names to fetch.
- *
- * @param string $table
- * 		The table from which to select data.
  */
 class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 {
+	/**
+	 * An array of columns to be fetched.
+	 * 
+	 * The keys should not be omitted (to allow extensibility) and should be
+	 * the alias of the column.
+	 * 
+	 * @var array
+	 */
 	public $fields = array();
+	
+	/**
+	 * Whether or not duplicate rows should be filtered.
+	 * 
+	 * Defaults to true.
+	 * 
+	 * @var bool
+	 */
 	public $distinct = false;
+	
+	public $where = '';
 
-	public $group = array();
 	public $order = array();
 	public $joins = array();
-	public $where = '';
+	public $group = array();
 	public $having = '';
+	
+	/**
+	 * The maximum number of rows to be fetched.
+	 * 
+	 * @var int
+	 */
 	public $limit = 0;
+	
+	/**
+	 * If a limit is provided, the offset at which rows of the result set
+	 * should start to be returned.
+	 * 
+	 * @var int
+	 */
 	public $offset = 0;
 
 	public function compile()
