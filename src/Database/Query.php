@@ -13,6 +13,8 @@
 abstract class Flux_Database_Query
 {
 	/**
+	 * The adapter that manages the connection to the database.
+	 * 
 	 * @var Flux_Database_Adapter
 	 */
 	public $adapter = null;
@@ -40,6 +42,13 @@ abstract class Flux_Database_Query
 	 */
 	protected $run = false;
 
+	/**
+	 * Constructor
+	 * 
+	 * Used to assign a database adapter.
+	 * 
+	 * @param Flux_Database_Adapter $adapter
+	 */
 	public function __construct(Flux_Database_Adapter $adapter)
 	{
 		$this->adapter = $adapter;
@@ -69,9 +78,9 @@ abstract class Flux_Database_Query
 	}
 
 	/**
-	 * Execute the query with the given parameters.
+	 * Execute the query with the given parameters, if specified.
 	 * 
-	 * If this method is called twice on the same object, this will throw an
+	 * If this method is called twice on the same object, it will throw an
 	 * exception.
 	 * 
 	 * @param array $params
@@ -91,7 +100,7 @@ abstract class Flux_Database_Query
 	}
 
 	/**
-	 * Template method for running the given query.
+	 * Template method for running the query with the given parameters.
 	 * 
 	 * This method should be overwritten by subclasses. It needs to pass the
 	 * given parameters to the database adapter and execute an SQL query.
@@ -139,7 +148,7 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 	}
 
 	/**
-	 * Template method for running the given query.
+	 * Template method for running the query with the given parameters.
 	 *
 	 * This function will not have any effect if overwritten by subclasses.
 	 *
@@ -179,11 +188,29 @@ class Flux_Database_Query_Direct extends Flux_Database_Query
 	 */
 	public $sql = '';
 
+	/**
+	 * Run the given query.
+	 *
+	 * This method should be overwritten by subclasses. It needs to pass the
+	 * given parameters to the database adapter and execute an SQL query.
+	 *
+	 * @param array $params
+	 * @return mixed
+	 */
 	protected function _run(array $params = array())
 	{
 		return $this->adapter->query($this->sql, $params);
 	}
 
+	/**
+	 * Get the table that is affected by the query.
+	 *
+	 * This will not have any effect, as direct queries will ignore the table
+	 * property, even if set. Therefore, this function will simply return an
+	 * empty string.
+	 *
+	 * @return string
+	 */
 	public function getTable()
 	{
 		return '';
@@ -208,17 +235,58 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 	/**
 	 * Whether or not duplicate rows should be filtered.
 	 * 
-	 * Defaults to true.
+	 * Defaults to false.
 	 * 
 	 * @var bool
 	 */
 	public $distinct = false;
 	
+	/**
+	 * A SQL condition string for use in the WHERE clause of the query.
+	 * 
+	 * @var string
+	 */
 	public $where = '';
 
+	/**
+	 * An array of columns to sort by.
+	 * 
+	 * Every element should consist of the column name (including table alias)
+	 * and a sort order (ASC/DESC). The key should be the column name.
+	 * 
+	 * @var array
+	 */
 	public $order = array();
+	
+	/**
+	 * An array of tables to join.
+	 * 
+	 * Every element should be an instance of {@see Flux_Database_Query_Join}.
+	 * For convenience, use the {@see innerJoin()} and {@see leftJoin()} methods
+	 * for adding new tables to the array.
+	 * 
+	 * @var array
+	 */
 	public $joins = array();
+	
+	/**
+	 * An array of columns to group by.
+	 * 
+	 * Every element should consist of the column name (including table alias),
+	 * in the correct order. The key should be the column name.
+	 * 
+	 * @var array
+	 */
 	public $group = array();
+	
+	/**
+	 * A SQL condition string for use in the HAVING clause of the query. Usually
+	 * used with aggregate functions (like COUNT).
+	 * 
+	 * Only applicable if columns to group by have been specified.
+	 *
+	 * @var string
+	 */
 	public $having = '';
 	
 	/**
