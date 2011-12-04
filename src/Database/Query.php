@@ -530,7 +530,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 	public $indices = array();
 	public $primary = array();
-	
+
 	public $engine = '';
 
 	protected function _run(array $params = array())
@@ -545,7 +545,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 		return $c;
 	}
-	
+
 	public function index($name, array $columns, $unique = false)
 	{
 		if ($name == 'PRIMARY')
@@ -715,7 +715,7 @@ class Flux_Database_Query_Helper_TableColumn
 	public $type;
 	public $default;
 	public $allow_null;
-	
+
 	public $collation = '';
 
 	public function __construct($name, $type, $default = null, $allow_null = true, $collation = '')

@@ -26,7 +26,7 @@ abstract class Flux_Database_Adapter
 	protected $queries = array();
 
 	protected $type;
-	
+
 	protected $charset = 'utf8';
 
 	public $prefix = '';
@@ -45,7 +45,7 @@ abstract class Flux_Database_Adapter
 		{
 			throw new Exception('Illegal database adapter type.');
 		}
-		
+
 		$name = 'Flux_Database_Adapter_'.$type;
 		$file = str_replace('_', '/', 'Adapter_'.$type).'.php';
 
@@ -555,10 +555,10 @@ abstract class Flux_Database_Adapter
 
 		if (empty($query->values))
 			throw new Exception('A REPLACE query must contain at least one value.');
-		
+
 		if (empty($query->keys))
 			throw new Exception('A REPLACE query must contain at least one key.');
-		
+
 		$values = array_merge($query->keys, $query->values);
 
 		$sql = 'REPLACE INTO '.$table.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(', ', array_values($values)).')';
@@ -578,7 +578,7 @@ abstract class Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -587,26 +587,26 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A CREATE TABLE query must have a table specified.');
-		
+
 		if (empty($query->fields))
 			throw new Exception('A CREATE TABLE query must contain at least one field.');
-		
+
 		$fields = array();
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
-		
+
 		try {
 			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
-			
+
 			if (!empty($query->primary))
 			{
 				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
 			}
-			
+
 			$sql .= ')';
-		
+
 			$this->exec($sql);
-		
+
 			if (!empty($query->indices))
 			{
 				foreach ($query->indices as $name => $index)
@@ -622,7 +622,7 @@ abstract class Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -642,7 +642,7 @@ abstract class Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -651,14 +651,14 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A DROP TABLE query must have a table specified.');
-		
+
 		try {
 			$sql = 'DROP TABLE '.$table;
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -667,7 +667,7 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A TABLE EXISTS query must have a table specified.');
-		
+
 		$sql = 'SHOW TABLES LIKE '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
@@ -677,10 +677,10 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An ADD FIELD query must have a table specified.');
-		
+
 		if ($query->field == NULL)
 			throw new Exception('An ADD FIELD query must have field information specified.');
-		
+
 		$field = $this->compileColumnDefinition($query->field);
 
 		try {
@@ -689,7 +689,7 @@ abstract class Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -698,10 +698,10 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An ALTER FIELD query must have a table specified.');
-		
+
 		if ($query->field == NULL)
 			throw new Exception('An ALTER FIELD query must have field information specified.');
-		
+
 		$field = $this->compileColumnDefinition($query->field);
 
 		try {
@@ -710,7 +710,7 @@ abstract class Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -719,17 +719,17 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A DROP FIELD query must have a table specified.');
-		
+
 		if (empty($query->field))
 			throw new Exception('A DROP FIELD query must have a field specified.');
-		
+
 		try {
 			$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -738,10 +738,10 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A FIELD EXISTS query must have a table specified.');
-		
+
 		if (empty($query->field))
 			throw new Exception('A FIELD EXISTS query must have a field specified.');
-		
+
 		$sql = 'SHOW COLUMNS FROM '.$table.' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
@@ -751,20 +751,20 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An ADD INDEX query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('An ADD INDEX query must have an index specified.');
-		
+
 		if (empty($query->fields))
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
-		
+
 		try {
 			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -773,17 +773,17 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A DROP INDEX query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('A DROP INDEX query must have an index specified.');
-		
+
 		try {
 			$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -792,10 +792,10 @@ abstract class Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An INDEX EXISTS query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('An INDEX EXISTS query must have an index specified.');
-		
+
 		$sql = 'SHOW INDEX FROM '.$table.' WHERE Key_name = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
@@ -808,7 +808,7 @@ abstract class Flux_Database_Adapter
 			return $this->compileColumnSerial($column->name);
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
-		
+
 		if (!$column->allow_null)
 			$sql .= ' NOT NULL';
 
@@ -816,7 +816,7 @@ abstract class Flux_Database_Adapter
 			$sql .= ' DEFAULT '.$this->quote($column->default);
 		else if ($column->allow_null)
 			$sql .= ' DEFAULT NULL';
-		
+
 		if (!empty($column->collation))
 			$sql .= ' COLLATE '.$this->quote($this->charset.'_'.$column->collation);
 

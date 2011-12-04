@@ -20,39 +20,39 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	 * @return Flux_Database_Adapter
 	 */
 	abstract public function createAdapter();
-	
+
 	public function testCRUD()
 	{
 		$q1 = $this->db->createTable('test1');
 		$q1->field('username', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(40));
 		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
 		$r1 = $q1->run();
-		
+
 		$this->assertTrue($r1);
-		
+
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r2_1 = $q2->run($params);
 		$params = array(':username' => 'reines', ':name' => 'Jamie');
 		$r2_2 = $q2->run($params);
-		
+
 		$this->assertEquals(1, $r2_1);
 		$this->assertEquals(1, $r2_2);
-		
+
 		$q3 = $this->db->update(array('name' => ':name'), 'test1');
 		$q3->where = 'username = :username';
 		$params = array(':username' => 'lie2815', ':name' => 'Franz Liedke');
 		$r3_1 = $q3->run($params);
 		$r3_2 = $q3->run($params);
-		
+
 		// Match found rows, not replaced ones
 		$this->assertEquals(1, $r3_1);
 		$this->assertEquals(1, $r3_2);
-		
+
 		$q4 = $this->db->select(array('*'), 'test1');
 		$q4->order = array('username ASC');
 		$r4 = $q4->run();
-		
+
 		$expected = array(
 			array(
 				'username'	=> 'lie2815',
@@ -63,25 +63,25 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				'name'		=> 'Jamie',
 			),
 		);
-		
+
 		$this->assertEquals($expected, $r4);
-		
+
 		$q5 = $this->db->delete('test1');
 		$q5->where = 'username = :username';
 		$params = array(':username' => 'lie2815');
 		$r5_1 = $q5->run($params);
 		$params = array(':username' => 'reines');
 		$r5_2 = $q5->run($params);
-		
+
 		$this->assertEquals(1, $r5_1);
 		$this->assertEquals(1, $r5_2);
-		
+
 		$q6 = $this->db->dropTable('test1');
 		$r6 = $q6->run();
-		
+
 		$this->assertTrue($r6);
 	}
-	
+
 	public function testReplaceQuery()
 	{
 		$q1 = $this->db->createTable('test2');
@@ -89,31 +89,31 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
 		$q1->index('PRIMARY', array('username'));
 		$r1 = $q1->run();
-		
+
 		$this->assertTrue($r1);
-		
+
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test2');
 		$params = array(':username' => 'reines', ':name' => 'Jamie');
 		$r2 = $q2->run($params);
-		
+
 		$this->assertEquals(1, $r2);
-		
+
 		$q3 = $this->db->replace(array('name' => ':name'), 'test2', array('username' => ':username'));
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r3 = $q3->run($params);
-		
+
 		$this->assertEquals(1, $r3);
-		
+
 		$q4 = $this->db->replace(array('name' => ':name'), 'test2', array('username' => ':username'));
 		$params = array(':username' => 'lie2815', ':name' => 'Franz Liedke');
 		$r4 = $q4->run($params);
-		
+
 		$this->assertEquals(2, $r4);
-		
+
 		$q5 = $this->db->select(array('username', 'name'), 'test2');
 		$q5->order = array('username ASC');
 		$r5 = $q5->run();
-		
+
 		$expected = array(
 			array(
 				'username'	=> 'lie2815',
@@ -124,12 +124,12 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				'name'		=> 'Jamie',
 			),
 		);
-		
+
 		$this->assertEquals($expected, $r5);
-		
+
 		$q6 = $this->db->dropTable('test2');
 		$r6 = $q6->run();
-		
+
 		$this->assertTrue($r6);
 	}
 
@@ -178,7 +178,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q6 = $this->db->dropTable('test2');
 		$q6->run();
 	}
-	
+
 	public function testComplexTableInfo()
 	{
 		$q1 = $this->db->createTable('test3');
@@ -188,10 +188,10 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1->index('number_idx', array('number'), true);
 		$r1 = $q1->run();
 		$this->assertTrue($r1);
-		
+
 		$q2 = $this->db->tableInfo('test3');
 		$r2 = $q2->run();
-		
+
 		$expected = array(
 			'columns' => array(
 				'id'	=> array(
@@ -215,14 +215,14 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				),
 			),
 		);
-		
+
 		$this->assertEquals($expected, $r2);
-		
+
 		$q3 = $this->db->dropTable('test3');
 		$r3 = $q3->run();
 		$this->assertTrue($r3);
 	}
-	
+
 	public function testDefaultValues()
 	{
 		$q1 = $this->db->createTable('test4');
@@ -234,21 +234,21 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
 		$this->assertTrue($r1);
-		
+
 		$q2 = $this->db->tableInfo('test4');
 		$r2 = $q2->run();
-		
+
 		$this->assertTrue(array_key_exists('default', $r2['columns']['default_null']));
 		$this->assertEquals('abc', $r2['columns']['default_null']['default']);
-		
+
 		$this->assertTrue(array_key_exists('default', $r2['columns']['default_not_null']));
 		$this->assertEquals('abc', $r2['columns']['default_not_null']['default']);
-		
+
 		$this->assertTrue(array_key_exists('default', $r2['columns']['no_default_null']));
 		$this->assertNull($r2['columns']['no_default_null']['default']);
-		
+
 		$this->assertFalse(array_key_exists('default', $r2['columns']['no_default_not_null']));
-		
+
 		$q3 = $this->db->dropTable('test4');
 		$r3 = $q3->run();
 	}

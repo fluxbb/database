@@ -42,19 +42,19 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	public function runCreateTable(Flux_Database_Query_CreateTable $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A CREATE TABLE query must have a table specified.');
-	
+
 		if (empty($query->fields))
 			throw new Exception('A CREATE TABLE query must contain at least one field.');
-	
+
 		$fields = array();
 		$has_serial = false;
 		foreach ($query->fields as $field) {
@@ -65,19 +65,19 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			}
 			$fields[] = $this->compileColumnDefinition($field);
 		}
-	
+
 		try {
 			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
-		
+
 			if (!empty($query->primary) && !$has_serial)
 			{
 				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
 			}
-		
+
 			$sql .= ')';
-		
+
 			$this->exec($sql);
-		
+
 			if (!empty($query->indices))
 			{
 				foreach ($query->indices as $name => $index)
@@ -93,7 +93,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		} catch (PDOException $e) {
 			return false;
 		}
-	
+
 		return true;
 	}
 
@@ -102,7 +102,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A TABLE EXISTS query must have a table specified.');
-		
+
 		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($table).' AND type=\'table\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
@@ -118,47 +118,47 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A DROP FIELD query must have a table specified.');
-		
+
 		if (empty($query->field))
 			throw new Exception('A DROP FIELD query must have a field specified.');
-		
+
 		try {
 			$now = time();
 			$q = $this->tableInfo($table);
 			$q->usePrefix = false;
 			$table_info = $q->run();
-			
+
 			// Create temporary table
 			$sql = 'CREATE TABLE '.$table.'_t'.$now.' AS SELECT * FROM '.$table;
 			$this->exec($sql);
-			
+
 			unset($table_info['columns'][$query->field]);
 			$new_columns = array_keys($table_info['columns']);
-	
+
 			$new_sql = 'CREATE TABLE '.$table.' (';
-	
+
 			foreach ($table_info['columns'] as $cur_column => $column)
 			{
 				$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
 			}
-	
+
 			if (isset($table_info['unique'])) {
 				foreach ($table_info['unique'] as $unique) {
 					$new_sql .= "\n".'UNIQUE ('.implode(', ', $unique).'),';
 				}
 			}
-	
+
 			if (!empty($table_info['primary_key']))
 				$new_sql .= "\n".'PRIMARY KEY ('.implode(', ', $table_info['primary_key']).'),';
-	
+
 			$new_sql = trim($new_sql, ',')."\n".');';
-	
+
 			// Drop old table
 			$this->exec('DROP TABLE '.$table);
-	
+
 			// Create new table
 			$this->exec($new_sql);
-	
+
 			// Recreate indexes
 			if (!empty($table_info['indices']))
 			{
@@ -172,15 +172,15 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 					}
 				}
 			}
-	
+
 			// Copy content back
 			$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
-	
+
 			$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -189,10 +189,10 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A FIELD EXISTS query must have a table specified.');
-		
+
 		if (empty($query->field))
 			throw new Exception('A FIELD EXISTS query must have a field specified.');
-		
+
 		$result = $this->query('PRAGMA table_info('.$table.')');
 		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
 		{
@@ -209,20 +209,20 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An ADD INDEX query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('An ADD INDEX query must have an index specified.');
-		
+
 		if (empty($query->fields))
 			throw new Exception('An ADD INDEX query must have at least one field specified.');
-		
+
 		try {
 			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -231,17 +231,17 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A DROP INDEX query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('A DROP INDEX query must have an index specified.');
-		
+
 		try {
 			$sql = 'DROP INDEX '.$table.'_'.$query->index;
 			$this->exec($sql);
 		} catch (PDOException $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -250,10 +250,10 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('An INDEX EXISTS query must have a table specified.');
-		
+
 		if (empty($query->index))
 			throw new Exception('An INDEX EXISTS query must have an index specified.');
-		
+
 		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($table.'_'.$query->index).' AND tbl_name = '.$this->quote($table).' AND type=\'index\'';
 		return (bool) $this->query($sql)->fetchColumn();
 	}
@@ -263,7 +263,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 		$table = $query->getTable();
 		if (empty($table))
 			throw new Exception('A TABLE INFO query must have a table specified.');
-		
+
 		$table_info = array(
 			'columns'		=> array(),
 			'primary_key'	=> array(),
@@ -279,14 +279,14 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 				'type'			=> $row['type'],
 				'allow_null'	=> $row['notnull'] == 0,
 			);
-			
+
 			if ($row['dflt_value'] !== NULL) {
 				if (substr($row['dflt_value'], 0, 1) == '\'' && substr($row['dflt_value'], -1) == '\'') {
 					$row['dflt_value'] = substr($row['dflt_value'], 1, -1);
 				} else if ($row['dflt_value'] == 'NULL') {
 					$row['dflt_value'] = NULL;
 				}
-				
+
 				$table_info['columns'][$row['name']]['default'] = $row['dflt_value'];
 			}
 
@@ -304,7 +304,7 @@ class Flux_Database_Adapter_SQLite extends Flux_Database_Adapter
 			{
 				continue;
 			}
-			
+
 			// Remove table name prefix
 			if (substr($cur_index['name'], 0, strlen($table.'_')) == $table.'_') {
 				$index_name = substr($cur_index['name'], strlen($table.'_'));
