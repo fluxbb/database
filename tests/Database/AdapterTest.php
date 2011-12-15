@@ -33,7 +33,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r2_1 = $q2->run($params);
-		$params = array(':username' => 'reines', ':name' => 'Jamie');
+		$params = array(':username' => 'Reines', ':name' => 'Jamie');
 		$r2_2 = $q2->run($params);
 
 		$this->assertEquals(1, $r2_1);
@@ -59,7 +59,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 				'name'		=> 'Franz Liedke',
 			),
 			array(
-				'username'	=> 'reines',
+				'username'	=> 'Reines',
 				'name'		=> 'Jamie',
 			),
 		);
@@ -70,7 +70,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 		$q5->where = 'username = :username';
 		$params = array(':username' => 'lie2815');
 		$r5_1 = $q5->run($params);
-		$params = array(':username' => 'reines');
+		$params = array(':username' => 'Reines');
 		$r5_2 = $q5->run($params);
 
 		$this->assertEquals(1, $r5_1);
