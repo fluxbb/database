@@ -297,25 +297,40 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 	public $limit = 0;
 	
 	/**
-	 * If a limit is provided, the offset at which rows of the result set
-	 * should start to be returned.
+	 * The offset at which rows of the result set should start to be returned.
+	 * 
+	 * This is ignored if no limit is provided.
 	 * 
 	 * @var int
 	 */
 	public $offset = 0;
-
+	
+	/**
+	 * Compile the query to be run.
+	 *
+	 * @return string
+	 */
 	public function compile()
 	{
 		return $this->adapter->compileSelect($this);
 	}
 
+	/**
+	 * Execute the query with the given parameters.
+	 *
+	 * If this method is called multiple times, changes to attributes in the
+	 * meantime will be ignored, as the query has already been compiled.
+	 *
+	 * @param array $params
+	 * @return array
+	 */
 	public function run(array $params = array())
 	{
 		$stmt = parent::run($params);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function innerJoin($key, $table, $on)
+	public function innerJoin($key, $table, $on = '')
 	{
 		$j = new Flux_Database_Query_Join_Inner($this, $table);
 		$j->on = $on;
@@ -324,7 +339,7 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 		return $j;
 	}
 
-	public function leftJoin($key, $table, $on)
+	public function leftJoin($key, $table, $on = '')
 	{
 		$j = new Flux_Database_Query_Join_Left($this, $table);
 		$j->on = $on;
@@ -347,16 +362,32 @@ class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
 {
 	public $values = array();
 
+	/**
+	 * Compile the query to be run.
+	 *
+	 * @return string
+	 */
 	public function compile()
 	{
 		return $this->adapter->compileInsert($this);
 	}
 
+	/**
+	 * Execute the query with the given parameters.
+	 *
+	 * If this method is called multiple times, changes to attributes in the
+	 * meantime will be ignored, as the query has already been compiled.
+	 *
+	 * @param array $params
+	 * @return int
+	 */
 	public function run(array $params = array())
 	{
 		$stmt = parent::run($params);
 		return $stmt->rowCount();
 	}
+	
+	// TODO: How to retrieve insert ID?
 }
 
 /**
@@ -377,11 +408,25 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
 	public $limit = 0;
 	public $offset = 0;
 
+	/**
+	 * Compile the query to be run.
+	 *
+	 * @return string
+	 */
 	public function compile()
 	{
 		return $this->adapter->compileUpdate($this);
 	}
 
+	/**
+	 * Execute the query with the given parameters.
+	 *
+	 * If this method is called multiple times, changes to attributes in the
+	 * meantime will be ignored, as the query has already been compiled.
+	 *
+	 * @param array $params
+	 * @return int
+	 */
 	public function run(array $params = array())
 	{
 		$stmt = parent::run($params);
@@ -402,11 +447,25 @@ class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
 	public $limit = 0;
 	public $offset = 0;
 
+	/**
+	 * Compile the query to be run.
+	 *
+	 * @return string
+	 */
 	public function compile()
 	{
 		return $this->adapter->compileDelete($this);
 	}
 
+	/**
+	 * Execute the query with the given parameters.
+	 *
+	 * If this method is called multiple times, changes to attributes in the
+	 * meantime will be ignored, as the query has already been compiled.
+	 *
+	 * @param array $params
+	 * @return int
+	 */
 	public function run(array $params = array())
 	{
 		$stmt = parent::run($params);
