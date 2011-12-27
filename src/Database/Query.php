@@ -438,10 +438,7 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
 {
 	public $values = array();
 
-	public $order = array();
 	public $where = '';
-	public $limit = 0;
-	public $offset = 0;
 
 	/**
 	 * Compile the query to be run.
@@ -477,11 +474,8 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
  */
 class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
 {
-	public $order = array();
 	public $where = '';
-	public $limit = 0;
-	public $offset = 0;
-
+	
 	/**
 	 * Compile the query to be run.
 	 *

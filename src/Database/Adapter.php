@@ -537,12 +537,6 @@ abstract class Flux_Database_Adapter
 		if (!empty($query->where))
 			$sql .= $this->compileWhere($query->where);
 
-		if (!empty($query->order))
-			$sql .= $this->compileOrder($query->order);
-
-		if ($query->limit > 0 || $query->offset > 0)
-			$sql .= $this->compileLimitOffset($query->limit, $query->offset);
-
 		return $sql;
 	}
 
@@ -556,12 +550,6 @@ abstract class Flux_Database_Adapter
 
 		if (!empty($query->where))
 			$sql .= $this->compileWhere($query->where);
-
-		if (!empty($query->order))
-			$sql .= $this->compileOrder($query->order);
-
-		if ($query->limit > 0 || $query->offset > 0)
-			$sql .= $this->compileLimitOffset($query->limit, $query->offset);
 
 		return $sql;
 	}
