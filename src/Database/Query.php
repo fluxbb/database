@@ -67,6 +67,7 @@ abstract class Flux_Database_Query
 	 * Used to assign a database adapter.
 	 * 
 	 * @param Flux_Database_Adapter $adapter
+	 * 		The database adapter to use.
 	 */
 	public function __construct(Flux_Database_Adapter $adapter)
 	{
@@ -77,6 +78,8 @@ abstract class Flux_Database_Query
 	 * Set the table that is affected by the query.
 	 * 
 	 * @param string $table
+	 * 		The table name.
+	 * 
 	 * @return void
 	 */
 	public function setTable($table)
@@ -90,6 +93,7 @@ abstract class Flux_Database_Query
 	 * If {@see usePrefix} is set to true, the global prefix will be prepended.
 	 * 
 	 * @return string
+	 * 		The table name.
 	 */
 	public function getTable()
 	{
@@ -103,8 +107,12 @@ abstract class Flux_Database_Query
 	 * exception.
 	 * 
 	 * @param array $params
+	 * 		An array of parameters to pass to the database along with the query.
+	 * 
 	 * @throws Exception
+	 * 
 	 * @return mixed
+	 * 		Query results (type depending on the query type).
 	 */
 	public function run(array $params = array())
 	{
@@ -119,20 +127,23 @@ abstract class Flux_Database_Query
 	}
 
 	/**
-	 * Template method for running the query with the given parameters.
+	 * Template method for actually running the query with the given parameters.
 	 * 
 	 * This method should be overwritten by subclasses. It needs to pass the
 	 * given parameters to the database adapter and execute an SQL query.
 	 * 
 	 * @param array $params
+	 * 		An array of parameters to pass to the database along with the query.
+	 * 
 	 * @return mixed
+	 * 		Query results (type depending on the query type).
 	 */
 	abstract protected function _run(array $params = array());
 }
 
 /**
- * The base class for all database queries that support
- * multiple calls with different queries.
+ * The base class for all database queries that support multiple calls with
+ * different queries.
  *
  * @abstract
  */
@@ -152,7 +163,9 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 	 * meantime will be ignored, as the query has already been compiled.
 	 *
 	 * @param array $params
+	 * 		An array of parameters to pass to the database along with the query.
 	 * @return mixed
+	 * 		Query results (type depending on the query type).
 	 */
 	public function run(array $params = array())
 	{
@@ -172,6 +185,8 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 	 * This function will not have any effect if overwritten by subclasses.
 	 *
 	 * @param array $params
+	 * 		An array of parameters to pass to the database along with the query.
+	 * 
 	 * @return void
 	 */
 	protected function _run(array $params = array())
@@ -184,6 +199,7 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 	 * the SQL for the query using the database adapter and return the SQL.
 	 * 
 	 * @return string
+	 * 		The SQL of the compiled query.
 	 */
 	abstract public function compile();
 }
