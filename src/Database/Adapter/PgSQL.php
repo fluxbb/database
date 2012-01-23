@@ -19,7 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
+ * @subpackage	Adapter
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
@@ -31,7 +32,9 @@
  * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
  */
 
-class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
+namespace fluxbb\database\adapter;
+
+class PgSQL extends \fluxbb\database\Adapter
 {
 	public function generateDsn()
 	{
@@ -48,23 +51,23 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		if (isset($this->options['dbname'])) {
 			$args[] = 'dbname='.$this->options['dbname'];
 		} else {
-			throw new Exception('No database name specified for PostgreSQL database.');
+			throw new \Exception('No database name specified for PostgreSQL database.');
 		}
 
 		return 'pgsql:'.implode(';', $args);
 	}
 
-	public function runReplace(Flux_Database_Query_Replace $query, array $params = array())
+	public function runReplace(\fluxbb\database\query\Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A REPLACE query must have a table specified.');
+			throw new \Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('A REPLACE query must contain at least one value.');
+			throw new \Exception('A REPLACE query must contain at least one value.');
 
 		if (empty($query->keys))
-			throw new Exception('A REPLACE query must contain at least one key.');
+			throw new \Exception('A REPLACE query must contain at least one key.');
 
 		$values = array();
 		foreach ($query->values as $key => $value)
@@ -97,40 +100,40 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return $insertCount > 0 ? 1 : 2;
 	}
 
-	public function runTruncate(Flux_Database_Query_Truncate $query)
+	public function runTruncate(\fluxbb\database\query\Truncate $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TRUNCATE query must have a table specified.');
+			throw new \Exception('A TRUNCATE query must have a table specified.');
 
 		try {
 			$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runTableExists(Flux_Database_Query_TableExists $query)
+	public function runTableExists(\fluxbb\database\query\TableExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TABLE EXISTS query must have a table specified.');
+			throw new \Exception('A TABLE EXISTS query must have a table specified.');
 
 		$sql = 'SELECT 1 FROM pg_class WHERE relname = '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runAlterField(Flux_Database_Query_AlterField $query)
+	public function runAlterField(\fluxbb\database\query\AlterField $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ALTER FIELD query must have a table specified.');
+			throw new \Exception('An ALTER FIELD query must have a table specified.');
 
 		if ($query->field == NULL)
-			throw new Exception('An ALTER FIELD query must have field information specified.');
+			throw new \Exception('An ALTER FIELD query must have field information specified.');
 
 		$now = time();
 
@@ -150,85 +153,85 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 			$q->run();
 
 			$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runFieldExists(Flux_Database_Query_FieldExists $query)
+	public function runFieldExists(\fluxbb\database\query\FieldExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A FIELD EXISTS query must have a table specified.');
+			throw new \Exception('A FIELD EXISTS query must have a table specified.');
 
 		if (empty($query->field))
-			throw new Exception('A FIELD EXISTS query must have a field specified.');
+			throw new \Exception('A FIELD EXISTS query must have a field specified.');
 
 		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = '.$this->quote($table).' AND a.attname = '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ADD INDEX query must have a table specified.');
+			throw new \Exception('An ADD INDEX query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('An ADD INDEX query must have an index specified.');
+			throw new \Exception('An ADD INDEX query must have an index specified.');
 
 		if (empty($query->fields))
-			throw new Exception('An ADD INDEX query must have at least one field specified.');
+			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		try {
 			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runDropIndex(Flux_Database_Query_DropIndex $query)
+	public function runDropIndex(\fluxbb\database\query\DropIndex $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A DROP INDEX query must have a table specified.');
+			throw new \Exception('A DROP INDEX query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('A DROP INDEX query must have an index specified.');
+			throw new \Exception('A DROP INDEX query must have an index specified.');
 
 		try {
 			$sql = 'DROP INDEX '.$table.'_'.$query->index;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runIndexExists(Flux_Database_Query_IndexExists $query)
+	public function runIndexExists(\fluxbb\database\query\IndexExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An INDEX EXISTS query must have a table specified.');
+			throw new \Exception('An INDEX EXISTS query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('An INDEX EXISTS query must have an index specified.');
+			throw new \Exception('An INDEX EXISTS query must have an index specified.');
 
 		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($table).' AND c2.relname = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runTableInfo(Flux_Database_Query_TableInfo $query)
+	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TABLE INFO query must have a table specified.');
+			throw new \Exception('A TABLE INFO query must have a table specified.');
 
 		$table_info = array(
 			'columns'		=> array(),
@@ -241,7 +244,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$sql = 'SELECT column_name, data_type, column_default, is_nullable FROM information_schema.columns WHERE table_name = '.$this->quote($table).' ORDER BY ordinal_position ASC';
 		$result = $this->query($sql);
 
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row)
 		{
 			$table_info['columns'][$row['column_name']] = array(
 				'type'			=> $this->understandColumnType($row['data_type']),
@@ -265,7 +268,7 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		$sql = 'SELECT t.relname AS table_name, ix.relname AS index_name, array_to_string(array_agg(col.attname), \',\') AS index_columns, i.indisunique FROM pg_index i JOIN pg_class ix ON ix.oid = i.indexrelid JOIN pg_class t on t.oid = i.indrelid JOIN (SELECT ic.indexrelid, unnest(ic.indkey) AS colnum FROM pg_index ic) icols ON icols.indexrelid = i.indexrelid JOIN pg_attribute col ON col.attrelid = t.oid and col.attnum = icols.colnum WHERE t.relname = '.$this->quote($table).' GROUP BY t.relname, ix.relname, i.indisunique ORDER BY t.relname, ix.relname';
 		$result = $this->query($sql);
 
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row)
 		{
 			// Remove table name prefix
 			$row['index_name'] = substr($row['index_name'], strlen($table.'_'));
@@ -287,9 +290,9 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 		return $table_info;
 	}
 
-	protected function compileColumnDefinition(Flux_Database_Query_Helper_TableColumn $column)
+	protected function compileColumnDefinition(\fluxbb\database\query\Helper_TableColumn $column)
 	{
-		if ($column->type === Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL)
+		if ($column->type === \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL)
 			return $this->compileColumnSerial($column->name);
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
@@ -307,11 +310,11 @@ class Flux_Database_Adapter_PgSQL extends Flux_Database_Adapter
 
 	protected function compileColumnType($type)
 	{
-		if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_INT_UNSIGNED) {
+		if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_INT_UNSIGNED) {
 			return 'INTEGER';
-		} else if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_MEDIUMINT_UNSIGNED) {
+		} else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_MEDIUMINT_UNSIGNED) {
 			return 'MEDIUMINT';
-		} else if ($type == Flux_Database_Query_Helper_TableColumn::TYPE_TINYINT_UNSIGNED) {
+		} else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_TINYINT_UNSIGNED) {
 			return 'TINYINT';
 		}
 		return $type;

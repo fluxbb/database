@@ -19,20 +19,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
  * @subpackage	Tests
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
 
+namespace fluxbb\database\tests;
+
 define('PHPDB_ROOT', realpath(dirname(__FILE__).'/../../src/').'/');
 require_once PHPDB_ROOT.'Database/Adapter.php';
 require_once 'PHPUnit/Framework/TestCase.php';
 
-abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
+abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 {
 	/**
-	 * @var Flux_Database_Adapter
+	 * @var \fluxbb\database\Adapter
 	 */
 	protected $db;
 
@@ -42,15 +44,15 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @return Flux_Database_Adapter
+	 * @return \fluxbb\database\Adapter
 	 */
 	abstract public function createAdapter();
 
 	public function testCRUD()
 	{
 		$q1 = $this->db->createTable('test1');
-		$q1->field('username', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(40));
-		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
+		$q1->field('username', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(40));
+		$q1->field('name', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(100));
 		$r1 = $q1->run();
 
 		$this->assertTrue($r1);
@@ -110,8 +112,8 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	public function testReplaceQuery()
 	{
 		$q1 = $this->db->createTable('test2');
-		$q1->field('username', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(40));
-		$q1->field('name', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(100));
+		$q1->field('username', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(40));
+		$q1->field('name', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(100));
 		$q1->index('PRIMARY', array('username'));
 		$r1 = $q1->run();
 
@@ -161,7 +163,7 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	public function testCreateAndRemoveTable()
 	{
 		$q1 = $this->db->createTable('test1');
-		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('id', \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL);
 		$q1->index('PRIMARY', array('id'));
 		$q1->run();
 
@@ -179,8 +181,8 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	public function testFillAndEmptyTable()
 	{
 		$q1 = $this->db->createTable('test2');
-		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
-		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
+		$q1->field('id', \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('number', \fluxbb\database\query\Helper_TableColumn::TYPE_INT);
 		$q1->index('PRIMARY', array('id'));
 		$q1->run();
 
@@ -207,8 +209,8 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	public function testComplexTableInfo()
 	{
 		$q1 = $this->db->createTable('test3');
-		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
-		$q1->field('number', Flux_Database_Query_Helper_TableColumn::TYPE_INT);
+		$q1->field('id', \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('number', \fluxbb\database\query\Helper_TableColumn::TYPE_INT);
 		$q1->index('PRIMARY', array('id'));
 		$q1->index('number_idx', array('number'), true);
 		$r1 = $q1->run();
@@ -251,11 +253,11 @@ abstract class Flux_Database_AdapterTest extends PHPUnit_Framework_TestCase
 	public function testDefaultValues()
 	{
 		$q1 = $this->db->createTable('test4');
-		$q1->field('id', Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL);
-		$q1->field('default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), 'abc', true);
-		$q1->field('default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), 'abc', false);
-		$q1->field('no_default_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, true);
-		$q1->field('no_default_not_null', Flux_Database_Query_Helper_TableColumn::TYPE_VARCHAR(), null, false);
+		$q1->field('id', \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL);
+		$q1->field('default_null', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(), 'abc', true);
+		$q1->field('default_not_null', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(), 'abc', false);
+		$q1->field('no_default_null', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(), null, true);
+		$q1->field('no_default_not_null', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(), null, false);
 		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
 		$this->assertTrue($r1);

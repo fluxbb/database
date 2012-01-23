@@ -24,62 +24,64 @@
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
 
+namespace fluxbb\database\query;
+
 /**
  * The base class for all database queries.
  *
  * @abstract
  */
-abstract class Flux_Database_Query
+abstract class Query
 {
 	/**
 	 * The adapter that manages the connection to the database.
-	 * 
-	 * @var Flux_Database_Adapter
+	 *
+	 * @var \fluxbb\database\Adapter
 	 */
 	public $adapter = null;
 
 	/**
 	 * The table that is affected by the query.
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $table = '';
-	
+
 	/**
 	 * Whether or not the global table prefix should automatically be applied.
-	 * 
+	 *
 	 * Defaults to true.
-	 * 
+	 *
 	 * @var bool
 	 */
 	public $usePrefix = true;
 
 	/**
 	 * Whether the query has already been run before.
-	 * 
+	 *
 	 * @var bool
 	 */
 	protected $run = false;
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * Used to assign a database adapter.
-	 * 
-	 * @param Flux_Database_Adapter $adapter
+	 *
+	 * @param \fluxbb\database\Adapter $adapter
 	 * 		The database adapter to use.
 	 */
-	public function __construct(Flux_Database_Adapter $adapter)
+	public function __construct(\fluxbb\database\Adapter $adapter)
 	{
 		$this->adapter = $adapter;
 	}
 
 	/**
 	 * Set the table that is affected by the query.
-	 * 
+	 *
 	 * @param string $table
 	 * 		The table name.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function setTable($table)
@@ -89,9 +91,9 @@ abstract class Flux_Database_Query
 
 	/**
 	 * Get the table that is affected by the query.
-	 * 
+	 *
 	 * If {@see usePrefix} is set to true, the global prefix will be prepended.
-	 * 
+	 *
 	 * @return string
 	 * 		The table name.
 	 */
@@ -102,15 +104,15 @@ abstract class Flux_Database_Query
 
 	/**
 	 * Execute the query with the given parameters, if specified.
-	 * 
+	 *
 	 * If this method is called twice on the same object, it will throw an
 	 * exception.
-	 * 
+	 *
 	 * @param array $params
 	 * 		An array of parameters to pass to the database along with the query.
-	 * 
-	 * @throws Exception
-	 * 
+	 *
+	 * @throws \Exception
+	 *
 	 * @return mixed
 	 * 		Query results (type depending on the query type).
 	 */
@@ -119,7 +121,7 @@ abstract class Flux_Database_Query
 		// This query type does not support multiple executions with different parameters
 		if ($this->run && !empty($params))
 		{
-			throw new Exception('This query type does not support multiple executions with different parameter sets.');
+			throw new \Exception('This query type does not support multiple executions with different parameter sets.');
 		}
 
 		$this->run = true;
@@ -128,13 +130,13 @@ abstract class Flux_Database_Query
 
 	/**
 	 * Template method for actually running the query with the given parameters.
-	 * 
+	 *
 	 * This method should be overwritten by subclasses. It needs to pass the
 	 * given parameters to the database adapter and execute an SQL query.
-	 * 
+	 *
 	 * @param array $params
 	 * 		An array of parameters to pass to the database along with the query.
-	 * 
+	 *
 	 * @return mixed
 	 * 		Query results (type depending on the query type).
 	 */
@@ -147,18 +149,18 @@ abstract class Flux_Database_Query
  *
  * @abstract
  */
-abstract class Flux_Database_Query_Multi extends Flux_Database_Query
+abstract class Multi extends Query
 {
 	/**
 	 * The handle of the pre-compiled query, as returned by the adapter.
-	 * 
+	 *
 	 * @var int
 	 */
 	protected $handle = null;
-	
+
 	/**
 	 * Execute the query with the given parameters.
-	 * 
+	 *
 	 * If this method is called multiple times, changes to attributes in the
 	 * meantime will be ignored, as the query has already been compiled.
 	 *
@@ -186,7 +188,7 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 	 *
 	 * @param array $params
 	 * 		An array of parameters to pass to the database along with the query.
-	 * 
+	 *
 	 * @return void
 	 */
 	protected function _run(array $params = array())
@@ -194,10 +196,10 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
 
 	/**
 	 * Compile the query to be run.
-	 * 
+	 *
 	 * This method should be overwritten by subclasses. It needs to assemble
 	 * the SQL for the query using the database adapter and return the SQL.
-	 * 
+	 *
 	 * @return string
 	 * 		The SQL of the compiled query.
 	 */
@@ -214,11 +216,11 @@ abstract class Flux_Database_Query_Multi extends Flux_Database_Query
  *
  * This will also ignore the value of the $table field, even if set.
  */
-class Flux_Database_Query_Direct extends Flux_Database_Query
+class Direct extends Query
 {
 	/**
 	 * The plain SQL query to represent.
-	 * 
+	 *
 	 * @var string
 	 */
 	public $sql = '';
@@ -255,91 +257,91 @@ class Flux_Database_Query_Direct extends Flux_Database_Query
 /**
  * Represents a SELECT query. Used to fetch data from the database.
  */
-class Flux_Database_Query_Select extends Flux_Database_Query_Multi
+class Select extends Multi
 {
 	/**
 	 * An array of columns to be fetched.
-	 * 
+	 *
 	 * The keys should not be omitted (to allow extensibility) and should be
 	 * the alias of the column.
-	 * 
+	 *
 	 * @var array
 	 */
 	public $fields = array();
-	
+
 	/**
 	 * Whether or not duplicate rows should be filtered.
-	 * 
+	 *
 	 * Defaults to false.
-	 * 
+	 *
 	 * @var bool
 	 */
 	public $distinct = false;
-	
+
 	/**
 	 * A SQL condition string for use in the WHERE clause of the query.
-	 * 
+	 *
 	 * @var string
 	 */
 	public $where = '';
 
 	/**
 	 * An array of columns to sort by.
-	 * 
+	 *
 	 * Every element should consist of the column name (including table alias)
 	 * and a sort order (ASC/DESC). The key should be the column name.
-	 * 
+	 *
 	 * @var array
 	 */
 	public $order = array();
-	
+
 	/**
 	 * An array of tables to join.
-	 * 
-	 * Every element should be an instance of {@see Flux_Database_Query_Join}.
+	 *
+	 * Every element should be an instance of {@see Join}.
 	 * For convenience, use the {@see innerJoin()} and {@see leftJoin()} methods
 	 * for adding new tables to the array.
-	 * 
+	 *
 	 * @var array
 	 */
 	public $joins = array();
-	
+
 	/**
 	 * An array of columns to group by.
-	 * 
+	 *
 	 * Every element should consist of the column name (including table alias),
 	 * in the correct order. The key should be the column name.
-	 * 
+	 *
 	 * @var array
 	 */
 	public $group = array();
-	
+
 	/**
 	 * A SQL condition string for use in the HAVING clause of the query. Usually
 	 * used with aggregate functions (like COUNT).
-	 * 
+	 *
 	 * Only applicable if columns to group by have been specified.
 	 *
 	 * @var string
 	 */
 	public $having = '';
-	
+
 	/**
 	 * The maximum number of rows to be fetched.
-	 * 
+	 *
 	 * @var int
 	 */
 	public $limit = 0;
-	
+
 	/**
 	 * The offset at which rows of the result set should start to be returned.
-	 * 
+	 *
 	 * This is ignored if no limit is provided.
-	 * 
+	 *
 	 * @var int
 	 */
 	public $offset = 0;
-	
+
 	/**
 	 * Compile the query to be run.
 	 *
@@ -362,12 +364,12 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 	public function run(array $params = array())
 	{
 		$stmt = parent::run($params);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
 	public function innerJoin($key, $table, $on = '')
 	{
-		$j = new Flux_Database_Query_Join_Inner($this, $table);
+		$j = new Join_Inner($this, $table);
 		$j->on = $on;
 
 		$this->joins[$key] = $j;
@@ -376,7 +378,7 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
 
 	public function leftJoin($key, $table, $on = '')
 	{
-		$j = new Flux_Database_Query_Join_Left($this, $table);
+		$j = new Join_Left($this, $table);
 		$j->on = $on;
 
 		$this->joins[$key] = $j;
@@ -393,7 +395,7 @@ class Flux_Database_Query_Select extends Flux_Database_Query_Multi
  * @param string $table
  * 		The table which this data should be inserted to.
  */
-class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
+class Insert extends Multi
 {
 	public $values = array();
 
@@ -421,7 +423,7 @@ class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
 		$stmt = parent::run($params);
 		return $stmt->rowCount();
 	}
-	
+
 	// TODO: How to retrieve insert ID?
 }
 
@@ -434,7 +436,7 @@ class Flux_Database_Query_Insert extends Flux_Database_Query_Multi
  * @param string $table
  * 		The table which this data should be updated in.
  */
-class Flux_Database_Query_Update extends Flux_Database_Query_Multi
+class Update extends Multi
 {
 	public $values = array();
 
@@ -472,10 +474,10 @@ class Flux_Database_Query_Update extends Flux_Database_Query_Multi
  * @param string $table
  * 		The table from which to delete data.
  */
-class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
+class Delete extends Multi
 {
 	public $where = '';
-	
+
 	/**
 	 * Compile the query to be run.
 	 *
@@ -515,7 +517,7 @@ class Flux_Database_Query_Delete extends Flux_Database_Query_Multi
  * @param array $keys
  * 		An array of field names which are considered unique keys for the table.
  */
-class Flux_Database_Query_Replace extends Flux_Database_Query
+class Replace extends Query
 {
 	public $values = array();
 	public $keys = array();
@@ -542,14 +544,14 @@ class Flux_Database_Query_Replace extends Flux_Database_Query
  * @param string $table
  * 		The table on which we are joining.
  */
-abstract class Flux_Database_Query_Join
+abstract class Join
 {
 	protected $query = null;
 	public $type = '';
 	protected $table = '';
 	public $on = '';
 
-	public function __construct(Flux_Database_Query_Select $query, $type, $table)
+	public function __construct(Select $query, $type, $table)
 	{
 		$this->query = $query;
 		$this->type = $type;
@@ -573,8 +575,8 @@ abstract class Flux_Database_Query_Join
  * @param string $table
  * 		The table on which we are joining.
  */
-class Flux_Database_Query_Join_Inner extends Flux_Database_Query_Join {
-	public function __construct(Flux_Database_Query_Select $query, $table)
+class Join_Inner extends Join {
+	public function __construct(Select $query, $table)
 	{
 		parent::__construct($query, 'INNER JOIN', $table);
 	}
@@ -586,8 +588,8 @@ class Flux_Database_Query_Join_Inner extends Flux_Database_Query_Join {
  * @param string $table
  * 		The table on which we are joining.
  */
-class Flux_Database_Query_Join_Left extends Flux_Database_Query_Join {
-	public function __construct(Flux_Database_Query_Select $query, $table)
+class Join_Left extends Join {
+	public function __construct(Select $query, $table)
 	{
 		parent::__construct($query, 'LEFT JOIN', $table);
 	}
@@ -604,7 +606,7 @@ class Flux_Database_Query_Join_Left extends Flux_Database_Query_Join {
  * @param string $table
  * 		The table from which to delete data.
  */
-class Flux_Database_Query_Truncate extends Flux_Database_Query
+class Truncate extends Query
 {
 	protected function _run(array $params = array())
 	{
@@ -612,7 +614,7 @@ class Flux_Database_Query_Truncate extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_CreateTable extends Flux_Database_Query
+class CreateTable extends Query
 {
 	public $fields = array();
 
@@ -628,7 +630,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 
 	public function field($name, $type, $default = null, $allow_null = true, $collation = '')
 	{
-		$c = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null, $collation);
+		$c = new Helper_TableColumn($name, $type, $default, $allow_null, $collation);
 		$this->fields[] = $c;
 
 		return $c;
@@ -647,7 +649,7 @@ class Flux_Database_Query_CreateTable extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_RenameTable extends Flux_Database_Query
+class RenameTable extends Query
 {
 	protected $new_name = '';
 
@@ -667,7 +669,7 @@ class Flux_Database_Query_RenameTable extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_DropTable extends Flux_Database_Query
+class DropTable extends Query
 {
 	protected function _run(array $params = array())
 	{
@@ -675,7 +677,7 @@ class Flux_Database_Query_DropTable extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_TableExists extends Flux_Database_Query
+class TableExists extends Query
 {
 	protected function _run(array $params = array())
 	{
@@ -683,24 +685,24 @@ class Flux_Database_Query_TableExists extends Flux_Database_Query
 	}
 }
 
-abstract class Flux_Database_Query_Field extends Flux_Database_Query
+abstract class Field extends Query
 {
 	/**
 	 * The column information
 	 *
-	 * @var Flux_Database_Query_Helper_TableColumn
+	 * @var Helper_TableColumn
 	 */
 	public $field = null;
 
 	public function field($name, $type, $default = null, $allow_null = true)
 	{
-		$this->field = new Flux_Database_Query_Helper_TableColumn($name, $type, $default, $allow_null);
+		$this->field = new Helper_TableColumn($name, $type, $default, $allow_null);
 
 		return $this->field;
 	}
 }
 
-class Flux_Database_Query_AddField extends Flux_Database_Query_Field
+class AddField extends Field
 {
 	protected function _run(array $params = array())
 	{
@@ -708,7 +710,7 @@ class Flux_Database_Query_AddField extends Flux_Database_Query_Field
 	}
 }
 
-class Flux_Database_Query_AlterField extends Flux_Database_Query_Field
+class AlterField extends Field
 {
 	protected function _run(array $params = array())
 	{
@@ -716,7 +718,7 @@ class Flux_Database_Query_AlterField extends Flux_Database_Query_Field
 	}
 }
 
-class Flux_Database_Query_DropField extends Flux_Database_Query
+class DropField extends Query
 {
 	public $field = '';
 
@@ -726,7 +728,7 @@ class Flux_Database_Query_DropField extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_FieldExists extends Flux_Database_Query
+class FieldExists extends Query
 {
 	public $field = '';
 
@@ -736,7 +738,7 @@ class Flux_Database_Query_FieldExists extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_AddIndex extends Flux_Database_Query
+class AddIndex extends Query
 {
 	public $index = '';
 	public $unique = false;
@@ -748,7 +750,7 @@ class Flux_Database_Query_AddIndex extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_DropIndex extends Flux_Database_Query
+class DropIndex extends Query
 {
 	public $index = '';
 
@@ -758,7 +760,7 @@ class Flux_Database_Query_DropIndex extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_IndexExists extends Flux_Database_Query
+class IndexExists extends Query
 {
 	public $index = '';
 
@@ -768,7 +770,7 @@ class Flux_Database_Query_IndexExists extends Flux_Database_Query
 	}
 }
 
-class Flux_Database_Query_TableInfo extends Flux_Database_Query
+class TableInfo extends Query
 {
 	protected function _run(array $params = array())
 	{
@@ -781,7 +783,7 @@ class Flux_Database_Query_TableInfo extends Flux_Database_Query
  * HELPER CLASSES
  */
 
-class Flux_Database_Query_Helper_TableColumn
+class Helper_TableColumn
 {
 	const TYPE_SERIAL = 'SERIAL';
 	const TYPE_TEXT = 'TEXT';

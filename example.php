@@ -28,7 +28,7 @@
 include_once 'src/Database/Adapter.php';
 include_once 'src/Database/Query.php';
 
-$db = Flux_Database_Adapter::factory('MySQL', array('dbname' => 'fluxbb__2.0', 'username' => 'root', 'password' => '', 'prefix' => 'forum_'));
+$db = \fluxbb\database\Adapter::factory('MySQL', array('dbname' => 'fluxbb__2.0', 'username' => 'root', 'password' => '', 'prefix' => 'forum_'));
 
 
 // Create a select query and manipulate it a little

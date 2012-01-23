@@ -19,14 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
 
+namespace fluxbb\database;
+
 require_once dirname(__FILE__).'/Query.php';
 
-abstract class Flux_Database_Adapter
+abstract class Adapter
 {
 	/**
 	 * The default connection charset that is used if none is specified when a
@@ -55,17 +57,17 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $type
 	 * @param array[optional] $options
-	 * @return Flux_Database_Adapter
+	 * @return Adapter
 	 */
 	public static function factory($type, array $options = array())
 	{
 		// Sanitise type
 		if (preg_match('%[^A-Za-z0-9_]%', $type))
 		{
-			throw new Exception('Illegal database adapter type.');
+			throw new \Exception('Illegal database adapter type.');
 		}
 
-		$name = 'Flux_Database_Adapter_'.$type;
+		$name = '\\fluxbb\\database\\adapter\\'.$type;
 		$file = str_replace('_', '/', 'Adapter_'.$type).'.php';
 
 		if (file_exists(dirname(__FILE__).'/'.$file))
@@ -75,7 +77,7 @@ abstract class Flux_Database_Adapter
 		}
 		else
 		{
-			throw new Exception('Database adapter type "'.$type.'" does not exist.');
+			throw new \Exception('Database adapter type "'.$type.'" does not exist.');
 		}
 	}
 
@@ -87,7 +89,7 @@ abstract class Flux_Database_Adapter
 	public static function getDriverList()
 	{
 		$return = array();
-		$pdo_drivers = PDO::getAvailableDrivers();
+		$pdo_drivers = \PDO::getAvailableDrivers();
 		foreach (glob(dirname(__FILE__).'/Adapter/*.php') as $file)
 		{
 			$name = substr(end(explode('/', $file)), 0, -4);
@@ -136,10 +138,10 @@ abstract class Flux_Database_Adapter
 	}
 
 	/**
-	 * Connect to the requested database via PDO.
+	 * Connect to the requested database via \PDO.
 	 *
 	 * @param string $dsn
-	 * 		The Data Source Name, see PDO::__construct.
+	 * 		The Data Source Name, see \PDO::__construct.
 	 */
 	public function connect($dsn)
 	{
@@ -151,14 +153,14 @@ abstract class Flux_Database_Adapter
 
 		// Avoid displaying connection details by re-throwing the exception here
 		try {
-			$this->pdo = new PDO($dsn, $username, $password, $driver_options);
-			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		} catch (PDOException $e) {
-			throw new Exception('Unable to connect to database.');
+			$this->pdo = new \PDO($dsn, $username, $password, $driver_options);
+			$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		} catch (\PDOException $e) {
+			throw new \Exception('Unable to connect to database.');
 		}
 
 		// Fetch the driver type
-		$this->type = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+		$this->type = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
 		// Attempt to set names
 		$this->setCharset($charset);
@@ -239,8 +241,8 @@ abstract class Flux_Database_Adapter
 	 * @param array $params
 	 * 		An array of parameters to combine with the query.
 	 *
-	 * @return PDOStatement
-	 * 		The executed PDOStatement.
+	 * @return \PDOStatement
+	 * 		The executed \PDOStatement.
 	 */
 	public function execute($handle, array $params = array())
 	{
@@ -253,7 +255,7 @@ abstract class Flux_Database_Adapter
 		if ($statement->execute($params) === false)
 		{
 			$error = $statement->errorInfo();
-			throw new Exception($error[2]);
+			throw new \Exception($error[2]);
 		}
 
 		// Note this query and how long it took
@@ -336,8 +338,8 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $sql
 	 * @param array[optional] $params
-	 * @return PDOStatement
-	 * @throws PDOException
+	 * @return \PDOStatement
+	 * @throws \PDOException
 	 */
 	public function query($sql, array $params = array())
 	{
@@ -458,8 +460,8 @@ abstract class Flux_Database_Adapter
 	{
 		$client = $server = '?';
 
-		try { $client = $this->getPDO()->getAttribute(PDO::ATTR_CLIENT_VERSION); } catch (PDOException $e) {}
-		try { $server = $this->getPDO()->getAttribute(PDO::ATTR_SERVER_VERSION); } catch (PDOException $e) {}
+		try { $client = $this->getPDO()->getAttribute(\PDO::ATTR_CLIENT_VERSION); } catch (\PDOException $e) {}
+		try { $server = $this->getPDO()->getAttribute(\PDO::ATTR_SERVER_VERSION); } catch (\PDOException $e) {}
 
 		return sprintf('%s %s/%s',
 			$this->type,
@@ -473,10 +475,10 @@ abstract class Flux_Database_Adapter
 	 * QUERY TYPES
 	 */
 
-	public function compileSelect(Flux_Database_Query_Select $query)
+	public function compileSelect(query\Select $query)
 	{
 		if (empty($query->fields))
-			throw new Exception('A SELECT query must select at least one field.');
+			throw new \Exception('A SELECT query must select at least one field.');
 
 		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
@@ -505,28 +507,28 @@ abstract class Flux_Database_Adapter
 		return $sql;
 	}
 
-	public function compileInsert(Flux_Database_Query_Insert $query)
+	public function compileInsert(query\Insert $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An INSERT query must have a table specified.');
+			throw new \Exception('An INSERT query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('An INSERT query must contain at least one value.');
+			throw new \Exception('An INSERT query must contain at least one value.');
 
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 
 		return $sql;
 	}
 
-	public function compileUpdate(Flux_Database_Query_Update $query)
+	public function compileUpdate(query\Update $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An UPDATE query must have a table specified.');
+			throw new \Exception('An UPDATE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('An UPDATE query must contain at least one value.');
+			throw new \Exception('An UPDATE query must contain at least one value.');
 
 		$updates = array();
 		foreach ($query->values as $key => $value)
@@ -540,11 +542,11 @@ abstract class Flux_Database_Adapter
 		return $sql;
 	}
 
-	public function compileDelete(Flux_Database_Query_Delete $query)
+	public function compileDelete(query\Delete $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A DELETE query must have a table specified.');
+			throw new \Exception('A DELETE query must have a table specified.');
 
 		$sql = 'DELETE FROM '.$table;
 
@@ -554,17 +556,17 @@ abstract class Flux_Database_Adapter
 		return $sql;
 	}
 
-	public function runReplace(Flux_Database_Query_Replace $query, array $params = array())
+	public function runReplace(query\Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A REPLACE query must have a table specified.');
+			throw new \Exception('A REPLACE query must have a table specified.');
 
 		if (empty($query->values))
-			throw new Exception('A REPLACE query must contain at least one value.');
+			throw new \Exception('A REPLACE query must contain at least one value.');
 
 		if (empty($query->keys))
-			throw new Exception('A REPLACE query must contain at least one key.');
+			throw new \Exception('A REPLACE query must contain at least one key.');
 
 		$values = array_merge($query->keys, $query->values);
 
@@ -573,30 +575,30 @@ abstract class Flux_Database_Adapter
 		return $result->rowCount();
 	}
 
-	public function runTruncate(Flux_Database_Query_Truncate $query)
+	public function runTruncate(query\Truncate $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TRUNCATE query must have a table specified.');
+			throw new \Exception('A TRUNCATE query must have a table specified.');
 
 		try {
 			$sql = 'TRUNCATE TABLE '.$table;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runCreateTable(Flux_Database_Query_CreateTable $query)
+	public function runCreateTable(query\CreateTable $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A CREATE TABLE query must have a table specified.');
+			throw new \Exception('A CREATE TABLE query must have a table specified.');
 
 		if (empty($query->fields))
-			throw new Exception('A CREATE TABLE query must contain at least one field.');
+			throw new \Exception('A CREATE TABLE query must contain at least one field.');
 
 		$fields = array();
 		foreach ($query->fields as $field)
@@ -626,192 +628,192 @@ abstract class Flux_Database_Adapter
 					$q->run();
 				}
 			}
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runRenameTable(Flux_Database_Query_RenameTable $query)
+	public function runRenameTable(query\RenameTable $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A RENAME TABLE query must have a table specified.');
+			throw new \Exception('A RENAME TABLE query must have a table specified.');
 
 		$new_name = $query->getNewName();
 		if (empty($new_name))
-			throw new Exception('A RENAME TABLE query must have a new table name specified.');
+			throw new \Exception('A RENAME TABLE query must have a new table name specified.');
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runDropTable(Flux_Database_Query_DropTable $query)
+	public function runDropTable(query\DropTable $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A DROP TABLE query must have a table specified.');
+			throw new \Exception('A DROP TABLE query must have a table specified.');
 
 		try {
 			$sql = 'DROP TABLE '.$table;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runTableExists(Flux_Database_Query_TableExists $query)
+	public function runTableExists(query\TableExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TABLE EXISTS query must have a table specified.');
+			throw new \Exception('A TABLE EXISTS query must have a table specified.');
 
 		$sql = 'SHOW TABLES LIKE '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runAddField(Flux_Database_Query_AddField $query)
+	public function runAddField(query\AddField $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ADD FIELD query must have a table specified.');
+			throw new \Exception('An ADD FIELD query must have a table specified.');
 
 		if ($query->field == NULL)
-			throw new Exception('An ADD FIELD query must have field information specified.');
+			throw new \Exception('An ADD FIELD query must have field information specified.');
 
 		$field = $this->compileColumnDefinition($query->field);
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runAlterField(Flux_Database_Query_AlterField $query)
+	public function runAlterField(query\AlterField $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ALTER FIELD query must have a table specified.');
+			throw new \Exception('An ALTER FIELD query must have a table specified.');
 
 		if ($query->field == NULL)
-			throw new Exception('An ALTER FIELD query must have field information specified.');
+			throw new \Exception('An ALTER FIELD query must have field information specified.');
 
 		$field = $this->compileColumnDefinition($query->field);
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runDropField(Flux_Database_Query_DropField $query)
+	public function runDropField(query\DropField $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A DROP FIELD query must have a table specified.');
+			throw new \Exception('A DROP FIELD query must have a table specified.');
 
 		if (empty($query->field))
-			throw new Exception('A DROP FIELD query must have a field specified.');
+			throw new \Exception('A DROP FIELD query must have a field specified.');
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runFieldExists(Flux_Database_Query_FieldExists $query)
+	public function runFieldExists(query\FieldExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A FIELD EXISTS query must have a table specified.');
+			throw new \Exception('A FIELD EXISTS query must have a table specified.');
 
 		if (empty($query->field))
-			throw new Exception('A FIELD EXISTS query must have a field specified.');
+			throw new \Exception('A FIELD EXISTS query must have a field specified.');
 
 		$sql = 'SHOW COLUMNS FROM '.$table.' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	public function runAddIndex(query\AddIndex $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ADD INDEX query must have a table specified.');
+			throw new \Exception('An ADD INDEX query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('An ADD INDEX query must have an index specified.');
+			throw new \Exception('An ADD INDEX query must have an index specified.');
 
 		if (empty($query->fields))
-			throw new Exception('An ADD INDEX query must have at least one field specified.');
+			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runDropIndex(Flux_Database_Query_DropIndex $query)
+	public function runDropIndex(query\DropIndex $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A DROP INDEX query must have a table specified.');
+			throw new \Exception('A DROP INDEX query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('A DROP INDEX query must have an index specified.');
+			throw new \Exception('A DROP INDEX query must have an index specified.');
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runIndexExists(Flux_Database_Query_IndexExists $query)
+	public function runIndexExists(query\IndexExists $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An INDEX EXISTS query must have a table specified.');
+			throw new \Exception('An INDEX EXISTS query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('An INDEX EXISTS query must have an index specified.');
+			throw new \Exception('An INDEX EXISTS query must have an index specified.');
 
 		$sql = 'SHOW INDEX FROM '.$table.' WHERE Key_name = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
-	abstract public function runTableInfo(Flux_Database_Query_TableInfo $query);
+	abstract public function runTableInfo(query\TableInfo $query);
 
-	protected function compileColumnDefinition(Flux_Database_Query_Helper_TableColumn $column)
+	protected function compileColumnDefinition(query\Helper_TableColumn $column)
 	{
-		if ($column->type === Flux_Database_Query_Helper_TableColumn::TYPE_SERIAL)
+		if ($column->type === query\Helper_TableColumn::TYPE_SERIAL)
 			return $this->compileColumnSerial($column->name);
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
@@ -906,11 +908,11 @@ abstract class Flux_Database_Adapter
 	 * @param array $fields
 	 * @param string[optional] $table
 	 * @param bool[optional] $distinct
-	 * @return Flux_Database_Query_Select
+	 * @return query\Select
 	 */
 	public function select($fields, $table = null, $distinct = false)
 	{
-		$q = new Flux_Database_Query_Select($this);
+		$q = new query\Select($this);
 		$q->fields = $fields;
 		$q->setTable($table);
 		$q->distinct = $distinct;
@@ -922,11 +924,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param array $values
 	 * @param string $table
-	 * @return Flux_Database_Query_Insert
+	 * @return query\Insert
 	 */
 	public function insert($values, $table)
 	{
-		$q = new Flux_Database_Query_Insert($this);
+		$q = new query\Insert($this);
 		$q->values = $values;
 		$q->setTable($table);
 		return $q;
@@ -937,11 +939,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param array $values
 	 * @param string $table
-	 * @return Flux_Database_Query_Update
+	 * @return query\Update
 	 */
 	public function update($values, $table)
 	{
-		$q = new Flux_Database_Query_Update($this);
+		$q = new query\Update($this);
 		$q->values = $values;
 		$q->setTable($table);
 		return $q;
@@ -951,11 +953,11 @@ abstract class Flux_Database_Adapter
 	 * Get a DELETE query object with the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_Delete
+	 * @return query\Delete
 	 */
 	public function delete($table)
 	{
-		$q = new Flux_Database_Query_Delete($this);
+		$q = new query\Delete($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -964,11 +966,11 @@ abstract class Flux_Database_Adapter
 	 * Get a TRUNCATE query object with the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_Truncate
+	 * @return query\Truncate
 	 */
 	public function truncate($table)
 	{
-		$q = new Flux_Database_Query_Truncate($this);
+		$q = new query\Truncate($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -979,11 +981,11 @@ abstract class Flux_Database_Adapter
 	 * @param array $values
 	 * @param string $table
 	 * @param array $keys
-	 * @return Flux_Database_Query_Replace
+	 * @return query\Replace
 	 */
 	public function replace($values, $table, $keys)
 	{
-		$q = new Flux_Database_Query_Replace($this);
+		$q = new query\Replace($this);
 		$q->values = $values;
 		$q->setTable($table);
 		$q->keys = $keys;
@@ -994,11 +996,11 @@ abstract class Flux_Database_Adapter
 	 * Get a CREATE TABLE query object with the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_CreateTable
+	 * @return query\CreateTable
 	 */
 	public function createTable($table)
 	{
-		$q = new Flux_Database_Query_CreateTable($this);
+		$q = new query\CreateTable($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -1008,11 +1010,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $new_name
-	 * @return Flux_Database_Query_RenameTable
+	 * @return query\RenameTable
 	 */
 	public function renameTable($table, $new_name)
 	{
-		$q = new Flux_Database_Query_RenameTable($this);
+		$q = new query\RenameTable($this);
 		$q->setTable($table);
 		$q->setNewName($new_name);
 		return $q;
@@ -1022,11 +1024,11 @@ abstract class Flux_Database_Adapter
 	 * Get a DROP TABLE query object with the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_DropTable
+	 * @return query\DropTable
 	 */
 	public function dropTable($table)
 	{
-		$q = new Flux_Database_Query_DropTable($this);
+		$q = new query\DropTable($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -1035,11 +1037,11 @@ abstract class Flux_Database_Adapter
 	 * Get a query object for checking whether the given table exists
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_TableExists
+	 * @return query\TableExists
 	 */
 	public function tableExists($table)
 	{
-		$q = new Flux_Database_Query_TableExists($this);
+		$q = new query\TableExists($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -1048,11 +1050,11 @@ abstract class Flux_Database_Adapter
 	 * Get a query object for adding a field to the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_AddField
+	 * @return query\AddField
 	 */
 	public function addField($table)
 	{
-		$q = new Flux_Database_Query_AddField($this);
+		$q = new query\AddField($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -1061,11 +1063,11 @@ abstract class Flux_Database_Adapter
 	 * Get a query object for altering a field in the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_AlterField
+	 * @return query\AlterField
 	 */
 	public function alterField($table)
 	{
-		$q = new Flux_Database_Query_AlterField($this);
+		$q = new query\AlterField($this);
 		$q->setTable($table);
 		return $q;
 	}
@@ -1075,11 +1077,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $field
-	 * @return Flux_Database_Query_DropField
+	 * @return query\DropField
 	 */
 	public function dropField($table, $field)
 	{
-		$q = new Flux_Database_Query_DropField($this);
+		$q = new query\DropField($this);
 		$q->setTable($table);
 		$q->field = $field;
 		return $q;
@@ -1090,11 +1092,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $field
-	 * @return Flux_Database_Query_FieldExists
+	 * @return query\FieldExists
 	 */
 	public function fieldExists($table, $field)
 	{
-		$q = new Flux_Database_Query_FieldExists($this);
+		$q = new query\FieldExists($this);
 		$q->setTable($table);
 		$q->field = $field;
 		return $q;
@@ -1105,11 +1107,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $index
-	 * @return Flux_Database_Query_AddIndex
+	 * @return query\AddIndex
 	 */
 	public function addIndex($table, $index)
 	{
-		$q = new Flux_Database_Query_AddIndex($this);
+		$q = new query\AddIndex($this);
 		$q->setTable($table);
 		$q->index = $index;
 		return $q;
@@ -1120,11 +1122,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $index
-	 * @return Flux_Database_Query_DropIndex
+	 * @return query\DropIndex
 	 */
 	public function dropIndex($table, $index)
 	{
-		$q = new Flux_Database_Query_DropIndex($this);
+		$q = new query\DropIndex($this);
 		$q->setTable($table);
 		$q->index = $index;
 		return $q;
@@ -1135,11 +1137,11 @@ abstract class Flux_Database_Adapter
 	 *
 	 * @param string $table
 	 * @param string $index
-	 * @return Flux_Database_Query_IndexExists
+	 * @return query\IndexExists
 	 */
 	public function indexExists($table, $index)
 	{
-		$q = new Flux_Database_Query_IndexExists($this);
+		$q = new query\IndexExists($this);
 		$q->setTable($table);
 		$q->index = $index;
 		return $q;
@@ -1149,11 +1151,11 @@ abstract class Flux_Database_Adapter
 	 * Get a query object for fetching information about the given table
 	 *
 	 * @param string $table
-	 * @return Flux_Database_Query_TableInfo
+	 * @return query\TableInfo
 	 */
 	public function tableInfo($table)
 	{
-		$q = new Flux_Database_Query_TableInfo($this);
+		$q = new query\TableInfo($this);
 		$q->setTable($table);
 		return $q;
 	}

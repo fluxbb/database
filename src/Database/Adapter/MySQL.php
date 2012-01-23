@@ -19,7 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
+ * @subpackage	Adapter
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
@@ -31,7 +32,9 @@
  * License: LGPL - GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
  */
 
-class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
+namespace fluxbb\database\adapter;
+
+class MySQL extends \fluxbb\database\Adapter
 {
 	const DEFAULT_ENGINE = 'MyISAM';
 
@@ -46,7 +49,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		if (!isset($this->options['driver_options'])) {
 			$this->options['driver_options'] = array();
 		}
-		$this->options['driver_options'][PDO::MYSQL_ATTR_FOUND_ROWS] = true;
+		$this->options['driver_options'][\PDO::MYSQL_ATTR_FOUND_ROWS] = true;
 	}
 
 	public function generateDsn()
@@ -69,20 +72,20 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 		if (isset($this->options['dbname'])) {
 			$args[] = 'dbname='.$this->options['dbname'];
 		} else {
-			throw new Exception('No database name specified for MySQL database.');
+			throw new \Exception('No database name specified for MySQL database.');
 		}
 
 		return 'mysql:'.implode(';', $args);
 	}
 
-	public function runCreateTable(Flux_Database_Query_CreateTable $query)
+	public function runCreateTable(\fluxbb\database\query\CreateTable $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A CREATE TABLE query must have a table specified.');
+			throw new \Exception('A CREATE TABLE query must have a table specified.');
 
 		if (empty($query->fields))
-			throw new Exception('A CREATE TABLE query must contain at least one field.');
+			throw new \Exception('A CREATE TABLE query must contain at least one field.');
 
 		$fields = array();
 		foreach ($query->fields as $field)
@@ -115,40 +118,40 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 				$sql .= ' CHARSET = '.$this->quote($this->charset);
 
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runAddIndex(Flux_Database_Query_AddIndex $query)
+	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('An ADD INDEX query must have a table specified.');
+			throw new \Exception('An ADD INDEX query must have a table specified.');
 
 		if (empty($query->index))
-			throw new Exception('An ADD INDEX query must have an index specified.');
+			throw new \Exception('An ADD INDEX query must have an index specified.');
 
 		if (empty($query->fields))
-			throw new Exception('An ADD INDEX query must have at least one field specified.');
+			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		try {
 			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
 			$this->exec($sql);
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			return false;
 		}
 
 		return true;
 	}
 
-	public function runTableInfo(Flux_Database_Query_TableInfo $query)
+	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{
 		$table = $query->getTable();
 		if (empty($table))
-			throw new Exception('A TABLE INFO query must have a table specified.');
+			throw new \Exception('A TABLE INFO query must have a table specified.');
 
 		$table_info = array(
 				'columns'		=> array(),
@@ -159,7 +162,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 
 		// Fetch column information
 		$result = $this->query('DESCRIBE '.$table);
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row)
 		{
 			$table_info['columns'][$row['Field']] = array(
 					'type'			=> $this->understandColumnType($row['Type']),
@@ -173,7 +176,7 @@ class Flux_Database_Adapter_MySQL extends Flux_Database_Adapter
 
 		// Fetch all indices
 		$result = $this->query('SHOW INDEXES FROM '.$table);
-		foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+		foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row)
 		{
 			// Save primary key
 			if ($row['Key_name'] == 'PRIMARY')

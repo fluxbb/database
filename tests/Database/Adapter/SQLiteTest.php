@@ -19,29 +19,31 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
  * @subpackage	Tests
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
 
+namespace fluxbb\database\tests;
+
 require_once dirname(__FILE__).'/../../../src/Database/Adapter.php';
 require_once dirname(__FILE__).'/../AdapterTest.php';
 
-class Flux_Database_Adapter_SQLiteTest extends Flux_Database_AdapterTest
+class Adapter_SQLiteTest extends AdapterTest
 {
 	public function createAdapter()
 	{
-		if (!in_array('sqlite', PDO::getAvailableDrivers())) {
-            $this->markTestSkipped(
-              'The SQLite driver cannot be loaded.'
-            );
-        }
+		if (!in_array('sqlite', \PDO::getAvailableDrivers())) {
+			$this->markTestSkipped(
+				'The SQLite driver cannot be loaded.'
+			);
+		}
 
-        $conf = array(
-        		'dbname'	=> $_ENV['DB_SQLITE_DBNAME'],
-        );
+		$conf = array(
+			'dbname'	=> $_ENV['DB_SQLITE_DBNAME'],
+		);
 
-		return Flux_Database_Adapter::factory('SQLite', $conf);
+		return \fluxbb\database\Adapter::factory('SQLite', $conf);
 	}
 }
