@@ -19,20 +19,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * @category	FluxBB
- * @package		Flux_Database
+ * @package		Database
  * @subpackage	Tests
  * @copyright	Copyright (c) 2011 FluxBB (http://fluxbb.org)
  * @license		http://www.gnu.org/licenses/lgpl.html	GNU Lesser General Public License
  */
 
+namespace fluxbb\database\tests;
+
 require_once dirname(__FILE__).'/../../../src/Database/Adapter.php';
 require_once dirname(__FILE__).'/../AdapterTest.php';
 
-class Flux_Database_Adapter_MySQLTest extends Flux_Database_AdapterTest
+class Adapter_MySQLTest extends AdapterTest
 {
 	public function createAdapter()
 	{
-		if (!in_array('mysql', PDO::getAvailableDrivers())) {
+		if (!in_array('mysql', \PDO::getAvailableDrivers())) {
             $this->markTestSkipped(
               'The MySQL driver cannot be loaded.'
             );
@@ -45,7 +47,7 @@ class Flux_Database_Adapter_MySQLTest extends Flux_Database_AdapterTest
 			'password'	=> $_ENV['DB_MYSQL_PASSWD'],
 		);
 
-		$adapter = Flux_Database_Adapter::factory('MySQL', $conf);
+		$adapter = \fluxbb\database\Adapter::factory('MySQL', $conf);
 
 		$result = $adapter->query('SHOW TABLES');
 		while ($table = $result->fetchColumn()) {
