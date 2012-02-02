@@ -27,7 +27,7 @@
 
 $_ENV['DB_MYSQL_DBNAME'] = 'fluxbb__test';
 $_ENV['DB_MYSQL_HOST'] = '0.0.0.0';
-$_ENV['DB_MYSQL_USER'] = '';
+$_ENV['DB_MYSQL_USER'] = 'root';
 $_ENV['DB_MYSQL_PASSWD'] = '';
 
 $_ENV['DB_SQLITE_DBNAME'] = ':memory:';
