@@ -58,7 +58,7 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -72,14 +72,14 @@ class SQLite extends \fluxbb\database\Adapter
 		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
 		$sql .= 'DELETE FROM '.$table;
 
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -164,7 +164,7 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run a DROP FIELD query.
 	 * 
 	 * @param query\DropField $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -230,7 +230,7 @@ class SQLite extends \fluxbb\database\Adapter
 		// Copy content back
 		$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
 
-		return $this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
+		$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
 	}
 
 	/**
@@ -265,7 +265,7 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -282,14 +282,14 @@ class SQLite extends \fluxbb\database\Adapter
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -303,7 +303,7 @@ class SQLite extends \fluxbb\database\Adapter
 			throw new \Exception('A DROP INDEX query must have an index specified.');
 
 		$sql = 'DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**

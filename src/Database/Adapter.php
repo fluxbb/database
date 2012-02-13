@@ -612,7 +612,7 @@ abstract class Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -623,14 +623,14 @@ abstract class Adapter
 			throw new \Exception('A TRUNCATE query must have a table specified.');
 
 		$sql = 'TRUNCATE TABLE '.$table;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -656,7 +656,7 @@ abstract class Adapter
 
 		$sql .= ')';
 
-		$result = $this->exec($sql);
+		$this->exec($sql);
 
 		if (!empty($query->indices))
 		{
@@ -670,15 +670,13 @@ abstract class Adapter
 				$q->run();
 			}
 		}
-		
-		return $result;
 	}
 
 	/**
 	 * Compile and run a RENAME TABLE query.
 	 * 
 	 * @param query\RenameTable $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -693,14 +691,14 @@ abstract class Adapter
 			throw new \Exception('A RENAME TABLE query must have a new table name specified.');
 
 		$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP TABLE query.
 	 * 
 	 * @param query\DropTable $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -711,7 +709,7 @@ abstract class Adapter
 			throw new \Exception('A DROP TABLE query must have a table specified.');
 
 		$sql = 'DROP TABLE '.$table;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
@@ -736,7 +734,7 @@ abstract class Adapter
 	 * Compile and run an ADD FIELD query.
 	 * 
 	 * @param query\AddField $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -752,14 +750,14 @@ abstract class Adapter
 		$field = $this->compileColumnDefinition($query->field);
 
 		$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an ALTER FIELD query.
 	 * 
 	 * @param query\AlterField $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -775,14 +773,14 @@ abstract class Adapter
 		$field = $this->compileColumnDefinition($query->field);
 
 		$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP FIELD query.
 	 * 
 	 * @param query\DropField $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -796,7 +794,7 @@ abstract class Adapter
 			throw new \Exception('A DROP FIELD query must have a field specified.');
 
 		$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
@@ -841,14 +839,14 @@ abstract class Adapter
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -862,7 +860,7 @@ abstract class Adapter
 			throw new \Exception('A DROP INDEX query must have an index specified.');
 
 		$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**

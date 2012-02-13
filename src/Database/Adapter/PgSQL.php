@@ -113,7 +113,7 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -149,7 +149,7 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run an ALTER FIELD query.
 	 * 
 	 * @param query\AlterField $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -178,7 +178,7 @@ class PgSQL extends \fluxbb\database\Adapter
 		$q->usePrefix = false;
 		$q->run();
 
-		return $this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
+		$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 	}
 
 	/**
@@ -206,7 +206,7 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -223,14 +223,14 @@ class PgSQL extends \fluxbb\database\Adapter
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */

@@ -82,7 +82,7 @@ class MySQL extends \fluxbb\database\Adapter
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -124,14 +124,14 @@ class MySQL extends \fluxbb\database\Adapter
 		if (!empty($this->charset))
 			$sql .= ' CHARSET = '.$this->quote($this->charset);
 
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
-	 * @return string
+	 * @return void
 	 * @throws \Exception
 	 * @throws \PDOException
 	 */
@@ -148,7 +148,7 @@ class MySQL extends \fluxbb\database\Adapter
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
 		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
-		return $this->exec($sql);
+		$this->exec($sql);
 	}
 
 	/**
