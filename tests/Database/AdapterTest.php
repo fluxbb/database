@@ -55,8 +55,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 		$q1->field('name', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(100));
 		$r1 = $q1->run();
 
-		$this->assertTrue($r1);
-
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r2_1 = $q2->run($params);
@@ -105,8 +103,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 
 		$q6 = $this->db->dropTable('test1');
 		$r6 = $q6->run();
-
-		$this->assertTrue($r6);
 	}
 
 	public function testReplaceQuery()
@@ -116,8 +112,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 		$q1->field('name', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(100));
 		$q1->index('PRIMARY', array('username'));
 		$r1 = $q1->run();
-
-		$this->assertTrue($r1);
 
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test2');
 		$params = array(':username' => 'reines', ':name' => 'Jamie');
@@ -156,8 +150,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 
 		$q6 = $this->db->dropTable('test2');
 		$r6 = $q6->run();
-
-		$this->assertTrue($r6);
 	}
 
 	public function testCreateAndRemoveTable()
@@ -214,7 +206,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 		$q1->index('PRIMARY', array('id'));
 		$q1->index('number_idx', array('number'), true);
 		$r1 = $q1->run();
-		$this->assertTrue($r1);
 
 		$q2 = $this->db->tableInfo('test3');
 		$r2 = $q2->run();
@@ -247,7 +238,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 
 		$q3 = $this->db->dropTable('test3');
 		$r3 = $q3->run();
-		$this->assertTrue($r3);
 	}
 
 	public function testDefaultValues()
@@ -260,7 +250,6 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 		$q1->field('no_default_not_null', \fluxbb\database\query\Helper_TableColumn::TYPE_VARCHAR(), null, false);
 		$q1->index('PRIMARY', array('id'));
 		$r1 = $q1->run();
-		$this->assertTrue($r1);
 
 		$q2 = $this->db->tableInfo('test4');
 		$r2 = $q2->run();
