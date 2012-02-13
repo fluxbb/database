@@ -254,17 +254,17 @@ abstract class AdapterTest extends \PHPUnit_Framework_TestCase
 		$q2 = $this->db->tableInfo('test4');
 		$r2 = $q2->run();
 
-		$this->assertTrue(array_key_exists('default', $r2['columns']['default_null']));
+		$this->assertArrayHasKey('default', $r2['columns']['default_null']);
 		$this->assertEquals('abc', $r2['columns']['default_null']['default']);
 
-		$this->assertTrue(array_key_exists('default', $r2['columns']['default_not_null']));
+		$this->assertArrayHasKey('default', $r2['columns']['default_not_null']);
 		$this->assertEquals('abc', $r2['columns']['default_not_null']['default']);
 
-		$this->assertTrue(array_key_exists('default', $r2['columns']['no_default_null']));
+		$this->assertArrayHasKey('default', $r2['columns']['no_default_null']);
 		$this->assertNull($r2['columns']['no_default_null']['default']);
 
-		$this->assertFalse(array_key_exists('default', $r2['columns']['no_default_not_null']));
-
+		$this->assertArrayNotHasKey('default', $r2['columns']['no_default_not_null']);
+		
 		$q3 = $this->db->dropTable('test4');
 		$r3 = $q3->run();
 	}
