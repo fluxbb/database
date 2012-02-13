@@ -78,6 +78,12 @@ class MySQL extends \fluxbb\database\Adapter
 		return 'mysql:'.implode(';', $args);
 	}
 
+	/**
+	 * Compile and run a CREATE TABLE query.
+	 * 
+	 * @param query\CreateTable $query
+	 * @throws \Exception
+	 */
 	public function runCreateTable(\fluxbb\database\query\CreateTable $query)
 	{
 		$table = $query->getTable();
@@ -125,6 +131,12 @@ class MySQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run an ADD INDEX query.
+	 * 
+	 * @param query\AddIndex $query
+	 * @throws \Exception
+	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
 		$table = $query->getTable();
@@ -147,6 +159,11 @@ class MySQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Run a table info query.
+	 *
+	 * @param query\TableInfo $query
+	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{
 		$table = $query->getTable();

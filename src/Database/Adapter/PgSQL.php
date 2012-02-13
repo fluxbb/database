@@ -57,6 +57,13 @@ class PgSQL extends \fluxbb\database\Adapter
 		return 'pgsql:'.implode(';', $args);
 	}
 
+	/**
+	 * Compile and run a REPLACE query.
+	 * 
+	 * @param query\Replace $query
+	 * @param array $params
+	 * @throws \Exception
+	 */
 	public function runReplace(\fluxbb\database\query\Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
@@ -100,6 +107,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return $insertCount > 0 ? 1 : 2;
 	}
 
+	/**
+	 * Compile and run a TRUNCATE query.
+	 * 
+	 * @param query\Truncate $query
+	 * @throws \Exception
+	 */
 	public function runTruncate(\fluxbb\database\query\Truncate $query)
 	{
 		$table = $query->getTable();
@@ -116,6 +129,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a TABLE EXISTS query.
+	 * 
+	 * @param query\TableExists $query
+	 * @throws \Exception
+	 */
 	public function runTableExists(\fluxbb\database\query\TableExists $query)
 	{
 		$table = $query->getTable();
@@ -126,6 +145,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Compile and run an ALTER FIELD query.
+	 * 
+	 * @param query\AlterField $query
+	 * @throws \Exception
+	 */
 	public function runAlterField(\fluxbb\database\query\AlterField $query)
 	{
 		$table = $query->getTable();
@@ -160,6 +185,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a FIELD EXISTS query.
+	 * 
+	 * @param query\FieldExists $query
+	 * @throws \Exception
+	 */
 	public function runFieldExists(\fluxbb\database\query\FieldExists $query)
 	{
 		$table = $query->getTable();
@@ -173,6 +204,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Compile and run an ADD INDEX query.
+	 * 
+	 * @param query\AddIndex $query
+	 * @throws \Exception
+	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
 		$table = $query->getTable();
@@ -195,6 +232,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP INDEX query.
+	 * 
+	 * @param query\DropIndex $query
+	 * @throws \Exception
+	 */
 	public function runDropIndex(\fluxbb\database\query\DropIndex $query)
 	{
 		$table = $query->getTable();
@@ -214,6 +257,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run an INDEX EXISTS query.
+	 * 
+	 * @param query\IndexExists $query
+	 * @throws \Exception
+	 */
 	public function runIndexExists(\fluxbb\database\query\IndexExists $query)
 	{
 		$table = $query->getTable();
@@ -227,6 +276,11 @@ class PgSQL extends \fluxbb\database\Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Run a table info query.
+	 *
+	 * @param query\TableInfo $query
+	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{
 		$table = $query->getTable();
@@ -290,6 +344,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return $table_info;
 	}
 
+	/**
+	 * Compile a table column definition.
+	 * 
+	 * @param query\Helper_TableColumn $column
+	 * @return string
+	 */
 	protected function compileColumnDefinition(\fluxbb\database\query\Helper_TableColumn $column)
 	{
 		if ($column->type === \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL)
@@ -308,6 +368,12 @@ class PgSQL extends \fluxbb\database\Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile a table column type definition.
+	 * 
+	 * @param string $type
+	 * @return string
+	 */
 	protected function compileColumnType($type)
 	{
 		if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_INT_UNSIGNED) {
@@ -330,11 +396,23 @@ class PgSQL extends \fluxbb\database\Adapter
 		return $str;
 	}
 
+	/**
+	 * Compile a table column type definition for serial columns.
+	 * 
+	 * @param string $name
+	 * @return string
+	 */
 	protected function compileColumnSerial($name)
 	{
 		return $name.' SERIAL NOT NULL';
 	}
 
+	/**
+	 * Compile any condition clause.
+	 * 
+	 * @param string $conditions
+	 * @return string
+	 */
 	protected function compileConditions($conditions)
 	{
 		$sql = parent::compileConditions($conditions);
@@ -343,6 +421,13 @@ class PgSQL extends \fluxbb\database\Adapter
 		return preg_replace('%(\s)(LIKE)(\s)%i', '$1ILIKE$3', $sql);
 	}
 
+	/**
+	 * Compile LIMIT and OFFSET clauses.
+	 * 
+	 * @param int $limit
+	 * @param int $offset
+	 * @return string
+	 */
 	protected function compileLimitOffset($limit, $offset)
 	{
 		$sql = '';

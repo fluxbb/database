@@ -54,6 +54,12 @@ class SQLite extends \fluxbb\database\Adapter
 		$this->charset = $charset;
 	}
 
+	/**
+	 * Compile and run a TRUNCATE query.
+	 * 
+	 * @param query\Truncate $query
+	 * @throws \Exception
+	 */
 	public function runTruncate(\fluxbb\database\query\Truncate $query)
 	{
 		$table = $query->getTable();
@@ -73,6 +79,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a CREATE TABLE query.
+	 * 
+	 * @param query\CreateTable $query
+	 * @throws \Exception
+	 */
 	public function runCreateTable(\fluxbb\database\query\CreateTable $query)
 	{
 		$table = $query->getTable();
@@ -124,6 +136,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a TABLE EXISTS query.
+	 * 
+	 * @param query\TableExists $query
+	 * @throws \Exception
+	 */
 	public function runTableExists(\fluxbb\database\query\TableExists $query)
 	{
 		$table = $query->getTable();
@@ -134,12 +152,24 @@ class SQLite extends \fluxbb\database\Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Compile and run an ALTER FIELD query.
+	 * 
+	 * @param query\AlterField $query
+	 * @throws \Exception
+	 */
 	public function runAlterField(\fluxbb\database\query\AlterField $query)
 	{
 		// SQLite does not need to change the type of the column, as long as the values are according to the type
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP FIELD query.
+	 * 
+	 * @param query\DropField $query
+	 * @throws \Exception
+	 */
 	public function runDropField(\fluxbb\database\query\DropField $query)
 	{
 		$table = $query->getTable();
@@ -211,6 +241,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a FIELD EXISTS query.
+	 * 
+	 * @param query\FieldExists $query
+	 * @throws \Exception
+	 */
 	public function runFieldExists(\fluxbb\database\query\FieldExists $query)
 	{
 		$table = $query->getTable();
@@ -231,6 +267,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return false;
 	}
 
+	/**
+	 * Compile and run an ADD INDEX query.
+	 * 
+	 * @param query\AddIndex $query
+	 * @throws \Exception
+	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
 		$table = $query->getTable();
@@ -253,6 +295,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP INDEX query.
+	 * 
+	 * @param query\DropIndex $query
+	 * @throws \Exception
+	 */
 	public function runDropIndex(\fluxbb\database\query\DropIndex $query)
 	{
 		$table = $query->getTable();
@@ -272,6 +320,12 @@ class SQLite extends \fluxbb\database\Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run an INDEX EXISTS query.
+	 * 
+	 * @param query\IndexExists $query
+	 * @throws \Exception
+	 */
 	public function runIndexExists(\fluxbb\database\query\IndexExists $query)
 	{
 		$table = $query->getTable();
@@ -285,6 +339,11 @@ class SQLite extends \fluxbb\database\Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Run a table info query.
+	 * 
+	 * @param query\TableInfo $query
+	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{
 		$table = $query->getTable();
@@ -363,11 +422,24 @@ class SQLite extends \fluxbb\database\Adapter
 		return $table_info;
 	}
 
+	/**
+	 * Compile a table column type definition for serial columns.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
 	protected function compileColumnSerial($name)
 	{
 		return $name.' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT';
 	}
 
+	/**
+	 * Compile LIMIT and OFFSET clauses.
+	 *
+	 * @param int $limit
+	 * @param int $offset
+	 * @return string
+	 */
 	protected function compileLimitOffset($limit, $offset)
 	{
 		$sql = '';

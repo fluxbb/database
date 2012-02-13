@@ -138,7 +138,7 @@ abstract class Adapter
 	}
 
 	/**
-	 * Connect to the requested database via \PDO.
+	 * Connect to the requested database via PDO.
 	 *
 	 * @param string $dsn
 	 * 		The Data Source Name, see \PDO::__construct.
@@ -170,7 +170,7 @@ abstract class Adapter
 	}
 
 	/**
-	 * Indicates what character set the database connection should use.
+	 * Set the character set the database connection should use.
 	 *
 	 * @param string $charset
 	 * 		The character set to use.
@@ -233,7 +233,7 @@ abstract class Adapter
 	}
 
 	/**
-	 * Execute an database query in a single function call.
+	 * Execute a database query in a single function call.
 	 *
 	 * @param int $handle
 	 * 		The handle of the statement to execute.
@@ -390,7 +390,7 @@ abstract class Adapter
 	/**
 	 * Turns off autocommit mode. While autocommit mode is turned off, changes made
 	 * to the database are not committed until you end the transaction by calling
-	 * Database::commit_transaction. Calling Database::rollback_transaction will roll
+	 * Adapter::commitTransaction. Calling Adapter::rollbackTransaction will roll
 	 * back all changes to the database and return the connection to autocommit mode.
 	 *
 	 * @return bool
@@ -403,7 +403,7 @@ abstract class Adapter
 
 	/**
 	 * Commits a transaction, returning the database connection to autocommit mode
-	 * until the next call to Database::start_transaction starts a new transaction.
+	 * until the next call to Adapter::startTransaction starts a new transaction.
 	 *
 	 * @return bool
 	 * 		TRUE on success or FALSE on failure.
@@ -414,8 +414,9 @@ abstract class Adapter
 	}
 
 	/**
-	 * Rolls back the current transaction. It is an error to call this method if no
-	 * transaction is active.
+	 * Rolls back the current transaction.
+	 * 
+	 * It is an error to call this method if no transaction is active.
 	 * If the database was set to autocommit mode, this function will restore autocommit
 	 * mode after it has rolled back the transaction.
 	 *
@@ -475,6 +476,12 @@ abstract class Adapter
 	 * QUERY TYPES
 	 */
 
+	/**
+	 * Compile a SELECT query.
+	 * 
+	 * @param query\Select $query
+	 * @throws \Exception
+	 */
 	public function compileSelect(query\Select $query)
 	{
 		if (empty($query->fields))
@@ -507,6 +514,12 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile an INSERT query.
+	 * 
+	 * @param query\Insert $query
+	 * @throws \Exception
+	 */
 	public function compileInsert(query\Insert $query)
 	{
 		$table = $query->getTable();
@@ -521,6 +534,12 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile an UPDATE query.
+	 * 
+	 * @param query\Update $query
+	 * @throws \Exception
+	 */
 	public function compileUpdate(query\Update $query)
 	{
 		$table = $query->getTable();
@@ -542,6 +561,12 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile a DELETE query.
+	 * 
+	 * @param query\Delete $query
+	 * @throws \Exception
+	 */
 	public function compileDelete(query\Delete $query)
 	{
 		$table = $query->getTable();
@@ -556,6 +581,13 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile and run a REPLACE query.
+	 * 
+	 * @param query\Replace $query
+	 * @param array $params
+	 * @throws \Exception
+	 */
 	public function runReplace(query\Replace $query, array $params = array())
 	{
 		$table = $query->getTable();
@@ -575,6 +607,12 @@ abstract class Adapter
 		return $result->rowCount();
 	}
 
+	/**
+	 * Compile and run a TRUNCATE query.
+	 * 
+	 * @param query\Truncate $query
+	 * @throws \Exception
+	 */
 	public function runTruncate(query\Truncate $query)
 	{
 		$table = $query->getTable();
@@ -591,6 +629,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a CREATE TABLE query.
+	 * 
+	 * @param query\CreateTable $query
+	 * @throws \Exception
+	 */
 	public function runCreateTable(query\CreateTable $query)
 	{
 		$table = $query->getTable();
@@ -635,6 +679,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a RENAME TABLE query.
+	 * 
+	 * @param query\RenameTable $query
+	 * @throws \Exception
+	 */
 	public function runRenameTable(query\RenameTable $query)
 	{
 		$table = $query->getTable();
@@ -655,6 +705,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP TABLE query.
+	 * 
+	 * @param query\DropTable $query
+	 * @throws \Exception
+	 */
 	public function runDropTable(query\DropTable $query)
 	{
 		$table = $query->getTable();
@@ -671,6 +727,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a TABLE EXISTS query.
+	 * 
+	 * @param query\TableExists $query
+	 * @throws \Exception
+	 */
 	public function runTableExists(query\TableExists $query)
 	{
 		$table = $query->getTable();
@@ -681,6 +743,12 @@ abstract class Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Compile and run an ADD FIELD query.
+	 * 
+	 * @param query\AddField $query
+	 * @throws \Exception
+	 */
 	public function runAddField(query\AddField $query)
 	{
 		$table = $query->getTable();
@@ -702,6 +770,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run an ALTER FIELD query.
+	 * 
+	 * @param query\AlterField $query
+	 * @throws \Exception
+	 */
 	public function runAlterField(query\AlterField $query)
 	{
 		$table = $query->getTable();
@@ -723,6 +797,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP FIELD query.
+	 * 
+	 * @param query\DropField $query
+	 * @throws \Exception
+	 */
 	public function runDropField(query\DropField $query)
 	{
 		$table = $query->getTable();
@@ -742,6 +822,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a FIELD EXISTS query.
+	 * 
+	 * @param query\FieldExists $query
+	 * @throws \Exception
+	 */
 	public function runFieldExists(query\FieldExists $query)
 	{
 		$table = $query->getTable();
@@ -755,6 +841,12 @@ abstract class Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Compile and run an ADD INDEX query.
+	 * 
+	 * @param query\AddIndex $query
+	 * @throws \Exception
+	 */
 	public function runAddIndex(query\AddIndex $query)
 	{
 		$table = $query->getTable();
@@ -777,6 +869,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run a DROP INDEX query.
+	 * 
+	 * @param query\DropIndex $query
+	 * @throws \Exception
+	 */
 	public function runDropIndex(query\DropIndex $query)
 	{
 		$table = $query->getTable();
@@ -796,6 +894,12 @@ abstract class Adapter
 		return true;
 	}
 
+	/**
+	 * Compile and run an INDEX EXISTS query.
+	 * 
+	 * @param query\IndexExists $query
+	 * @throws \Exception
+	 */
 	public function runIndexExists(query\IndexExists $query)
 	{
 		$table = $query->getTable();
@@ -809,8 +913,19 @@ abstract class Adapter
 		return (bool) $this->query($sql)->fetchColumn();
 	}
 
+	/**
+	 * Run a table info query.
+	 * 
+	 * @param query\TableInfo $query
+	 */
 	abstract public function runTableInfo(query\TableInfo $query);
 
+	/**
+	 * Compile a table column definition.
+	 * 
+	 * @param query\Helper_TableColumn $column
+	 * @return string
+	 */
 	protected function compileColumnDefinition(query\Helper_TableColumn $column)
 	{
 		if ($column->type === query\Helper_TableColumn::TYPE_SERIAL)
@@ -832,16 +947,34 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile a table column type definition.
+	 * 
+	 * @param string $type
+	 * @return string
+	 */
 	protected function compileColumnType($type)
 	{
 		return $type;
 	}
 
+	/**
+	 * Compile a table column type definition for serial columns.
+	 * 
+	 * @param string $name
+	 * @return string
+	 */
 	protected function compileColumnSerial($name)
 	{
 		return $name.' INTEGER UNSIGNED NOT NULL AUTO_INCREMENT';
 	}
 
+	/**
+	 * Compile a JOIN.
+	 * 
+	 * @param array $joins
+	 * @return string
+	 */
 	protected function compileJoin(array $joins)
 	{
 		$sql = '';
@@ -856,31 +989,68 @@ abstract class Adapter
 		return $sql;
 	}
 
+	/**
+	 * Compile a WHERE clause.
+	 * 
+	 * @param string $where
+	 * @return string
+	 */
 	protected function compileWhere($where)
 	{
 		return ' WHERE '.$this->compileConditions($where);
 	}
 
-	protected function compileGroup($group)
+	/**
+	 * Compile a GROUP BY clause.
+	 * 
+	 * @param array $group
+	 * @return string
+	 */
+	protected function compileGroup(array $group)
 	{
 		return ' GROUP BY '.implode(', ', $group);
 	}
 
+	/**
+	 * Compile a HAVING clause.
+	 * 
+	 * @param string $having
+	 * @return string
+	 */
 	protected function compileHaving($having)
 	{
 		return ' HAVING '.$this->compileConditions($having);
 	}
 
+	/**
+	 * Compile any condition clause.
+	 * 
+	 * @param string $conditions
+	 * @return string
+	 */
 	protected function compileConditions($conditions)
 	{
 		return '('.$conditions.')';
 	}
 
-	protected function compileOrder($order)
+	/**
+	 * Compile an ORDER BY clause.
+	 * 
+	 * @param array $order
+	 * @return string
+	 */
+	protected function compileOrder(array $order)
 	{
 		return ' ORDER BY '.implode(', ', $order);
 	}
 
+	/**
+	 * Compile LIMIT and OFFSET clauses.
+	 * 
+	 * @param int $limit
+	 * @param int $offset
+	 * @return string
+	 */
 	protected function compileLimitOffset($limit, $offset)
 	{
 		$sql = '';
