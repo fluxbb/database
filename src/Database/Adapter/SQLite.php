@@ -58,7 +58,9 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTruncate(\fluxbb\database\query\Truncate $query)
 	{
@@ -70,20 +72,16 @@ class SQLite extends \fluxbb\database\Adapter
 		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
 		$sql .= 'DELETE FROM '.$table;
 
-		try {
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runCreateTable(\fluxbb\database\query\CreateTable $query)
 	{
@@ -105,42 +103,40 @@ class SQLite extends \fluxbb\database\Adapter
 			$fields[] = $this->compileColumnDefinition($field);
 		}
 
-		try {
-			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
+		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 
-			if (!empty($query->primary) && !$has_serial)
-			{
-				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
-			}
-
-			$sql .= ')';
-
-			$this->exec($sql);
-
-			if (!empty($query->indices))
-			{
-				foreach ($query->indices as $name => $index)
-				{
-					// Add indices manually
-					$q = $this->addIndex($table, $name);
-					$q->fields = $index['columns'];
-					$q->unique = $index['unique'];
-					$q->usePrefix = false;
-					$q->run();
-				}
-			}
-		} catch (\PDOException $e) {
-			return false;
+		if (!empty($query->primary) && !$has_serial)
+		{
+			$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
 		}
 
-		return true;
+		$sql .= ')';
+
+		$result = $this->exec($sql);
+
+		if (!empty($query->indices))
+		{
+			foreach ($query->indices as $name => $index)
+			{
+				// Add indices manually
+				$q = $this->addIndex($table, $name);
+				$q->fields = $index['columns'];
+				$q->unique = $index['unique'];
+				$q->usePrefix = false;
+				$q->run();
+			}
+		}
+		
+		return $result;
 	}
 
 	/**
 	 * Compile and run a TABLE EXISTS query.
 	 * 
 	 * @param query\TableExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableExists(\fluxbb\database\query\TableExists $query)
 	{
@@ -156,7 +152,7 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run an ALTER FIELD query.
 	 * 
 	 * @param query\AlterField $query
-	 * @throws \Exception
+	 * @return bool
 	 */
 	public function runAlterField(\fluxbb\database\query\AlterField $query)
 	{
@@ -168,7 +164,9 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run a DROP FIELD query.
 	 * 
 	 * @param query\DropField $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropField(\fluxbb\database\query\DropField $query)
 	{
@@ -179,73 +177,69 @@ class SQLite extends \fluxbb\database\Adapter
 		if (empty($query->field))
 			throw new \Exception('A DROP FIELD query must have a field specified.');
 
-		try {
-			$now = time();
-			$q = $this->tableInfo($table);
-			$q->usePrefix = false;
-			$table_info = $q->run();
+		$now = time();
+		$q = $this->tableInfo($table);
+		$q->usePrefix = false;
+		$table_info = $q->run();
 
-			// Create temporary table
-			$sql = 'CREATE TABLE '.$table.'_t'.$now.' AS SELECT * FROM '.$table;
-			$this->exec($sql);
+		// Create temporary table
+		$sql = 'CREATE TABLE '.$table.'_t'.$now.' AS SELECT * FROM '.$table;
+		$this->exec($sql);
 
-			unset($table_info['columns'][$query->field]);
-			$new_columns = array_keys($table_info['columns']);
+		unset($table_info['columns'][$query->field]);
+		$new_columns = array_keys($table_info['columns']);
 
-			$new_sql = 'CREATE TABLE '.$table.' (';
+		$new_sql = 'CREATE TABLE '.$table.' (';
 
-			foreach ($table_info['columns'] as $cur_column => $column)
-			{
-				$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
-			}
-
-			if (isset($table_info['unique'])) {
-				foreach ($table_info['unique'] as $unique) {
-					$new_sql .= "\n".'UNIQUE ('.implode(', ', $unique).'),';
-				}
-			}
-
-			if (!empty($table_info['primary_key']))
-				$new_sql .= "\n".'PRIMARY KEY ('.implode(', ', $table_info['primary_key']).'),';
-
-			$new_sql = trim($new_sql, ',')."\n".');';
-
-			// Drop old table
-			$this->exec('DROP TABLE '.$table);
-
-			// Create new table
-			$this->exec($new_sql);
-
-			// Recreate indexes
-			if (!empty($table_info['indices']))
-			{
-				foreach ($table_info['indices'] as $index_name => $cur_index)
-				{
-					if (!in_array($query->field, $cur_index['fields']))
-					{
-						$q = $this->dropIndex($table, $index_name);
-						$q->usePrefix = false;
-						$q->run();
-					}
-				}
-			}
-
-			// Copy content back
-			$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
-
-			$this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
-		} catch (\PDOException $e) {
-			return false;
+		foreach ($table_info['columns'] as $cur_column => $column)
+		{
+			$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
 		}
 
-		return true;
+		if (isset($table_info['unique'])) {
+			foreach ($table_info['unique'] as $unique) {
+				$new_sql .= "\n".'UNIQUE ('.implode(', ', $unique).'),';
+			}
+		}
+
+		if (!empty($table_info['primary_key']))
+			$new_sql .= "\n".'PRIMARY KEY ('.implode(', ', $table_info['primary_key']).'),';
+
+		$new_sql = trim($new_sql, ',')."\n".');';
+
+		// Drop old table
+		$this->exec('DROP TABLE '.$table);
+
+		// Create new table
+		$this->exec($new_sql);
+
+		// Recreate indexes
+		if (!empty($table_info['indices']))
+		{
+			foreach ($table_info['indices'] as $index_name => $cur_index)
+			{
+				if (!in_array($query->field, $cur_index['fields']))
+				{
+					$q = $this->dropIndex($table, $index_name);
+					$q->usePrefix = false;
+					$q->run();
+				}
+			}
+		}
+
+		// Copy content back
+		$this->exec('INSERT INTO '.$query->getTable().' SELECT '.implode(', ', $new_columns).' FROM '.$query->getTable().'_t'.$now);
+
+		return $this->exec('DROP TABLE '.$query->getTable().'_t'.$now);
 	}
 
 	/**
 	 * Compile and run a FIELD EXISTS query.
 	 * 
 	 * @param query\FieldExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runFieldExists(\fluxbb\database\query\FieldExists $query)
 	{
@@ -271,7 +265,9 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
@@ -285,21 +281,17 @@ class SQLite extends \fluxbb\database\Adapter
 		if (empty($query->fields))
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
-		try {
-			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropIndex(\fluxbb\database\query\DropIndex $query)
 	{
@@ -310,21 +302,17 @@ class SQLite extends \fluxbb\database\Adapter
 		if (empty($query->index))
 			throw new \Exception('A DROP INDEX query must have an index specified.');
 
-		try {
-			$sql = 'DROP INDEX '.$table.'_'.$query->index;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'DROP INDEX '.$table.'_'.$query->index;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an INDEX EXISTS query.
 	 * 
 	 * @param query\IndexExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runIndexExists(\fluxbb\database\query\IndexExists $query)
 	{
@@ -343,6 +331,9 @@ class SQLite extends \fluxbb\database\Adapter
 	 * Run a table info query.
 	 * 
 	 * @param query\TableInfo $query
+	 * @return array
+	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{

@@ -82,7 +82,9 @@ class MySQL extends \fluxbb\database\Adapter
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runCreateTable(\fluxbb\database\query\CreateTable $query)
 	{
@@ -97,45 +99,41 @@ class MySQL extends \fluxbb\database\Adapter
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 
-		try {
-			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
+		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 
-			if (!empty($query->primary))
-			{
-				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
-			}
-
-			if (!empty($query->indices))
-			{
-				foreach ($query->indices as $name => $index)
-				{
-					$sql .= ', '.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$name.' ('.implode(', ', $index['columns']).')';
-				}
-			}
-
-			$sql .= ')';
-
-			if (!empty($query->engine))
-				$sql .= ' ENGINE = '.$this->quote($query->engine);
-			else if (!empty($this->engine))
-				$sql .= ' ENGINE = '.$this->quote($this->engine);
-
-			if (!empty($this->charset))
-				$sql .= ' CHARSET = '.$this->quote($this->charset);
-
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
+		if (!empty($query->primary))
+		{
+			$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
 		}
 
-		return true;
+		if (!empty($query->indices))
+		{
+			foreach ($query->indices as $name => $index)
+			{
+				$sql .= ', '.($index['unique'] ? ' UNIQUE' : '').' KEY '.$table.'_'.$name.' ('.implode(', ', $index['columns']).')';
+			}
+		}
+
+		$sql .= ')';
+
+		if (!empty($query->engine))
+			$sql .= ' ENGINE = '.$this->quote($query->engine);
+		else if (!empty($this->engine))
+			$sql .= ' ENGINE = '.$this->quote($this->engine);
+
+		if (!empty($this->charset))
+			$sql .= ' CHARSET = '.$this->quote($this->charset);
+
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
@@ -149,20 +147,17 @@ class MySQL extends \fluxbb\database\Adapter
 		if (empty($query->fields))
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Run a table info query.
 	 *
 	 * @param query\TableInfo $query
+	 * @return array
+	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{

@@ -62,7 +62,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * 
 	 * @param query\Replace $query
 	 * @param array $params
+	 * @return int
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runReplace(\fluxbb\database\query\Replace $query, array $params = array())
 	{
@@ -111,7 +113,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTruncate(\fluxbb\database\query\Truncate $query)
 	{
@@ -119,21 +123,17 @@ class PgSQL extends \fluxbb\database\Adapter
 		if (empty($table))
 			throw new \Exception('A TRUNCATE query must have a table specified.');
 
-		try {
-			$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a TABLE EXISTS query.
 	 * 
 	 * @param query\TableExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableExists(\fluxbb\database\query\TableExists $query)
 	{
@@ -149,7 +149,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run an ALTER FIELD query.
 	 * 
 	 * @param query\AlterField $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAlterField(\fluxbb\database\query\AlterField $query)
 	{
@@ -170,26 +172,22 @@ class PgSQL extends \fluxbb\database\Adapter
 		$subquery->usePrefix = false;
 		$subquery->run();
 
-		try {
-			$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
+		$this->exec('UPDATE '.$table.' SET '.$query->field->name.'_t'.$now.' = '.$query->field->name);
 
-			$q = $this->dropField($table, $query->field->name);
-			$q->usePrefix = false;
-			$q->run();
+		$q = $this->dropField($table, $query->field->name);
+		$q->usePrefix = false;
+		$q->run();
 
-			$this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		return $this->exec('ALTER TABLE '.$table.' RENAME COLUMN '.$query->field->name.'_t'.$now.' TO '.$query->field->name);
 	}
 
 	/**
 	 * Compile and run a FIELD EXISTS query.
 	 * 
 	 * @param query\FieldExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runFieldExists(\fluxbb\database\query\FieldExists $query)
 	{
@@ -208,7 +206,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAddIndex(\fluxbb\database\query\AddIndex $query)
 	{
@@ -222,21 +222,17 @@ class PgSQL extends \fluxbb\database\Adapter
 		if (empty($query->fields))
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
-		try {
-			$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropIndex(\fluxbb\database\query\DropIndex $query)
 	{
@@ -247,21 +243,17 @@ class PgSQL extends \fluxbb\database\Adapter
 		if (empty($query->index))
 			throw new \Exception('A DROP INDEX query must have an index specified.');
 
-		try {
-			$sql = 'DROP INDEX '.$table.'_'.$query->index;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'DROP INDEX '.$table.'_'.$query->index;
+		$this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an INDEX EXISTS query.
 	 * 
 	 * @param query\IndexExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runIndexExists(\fluxbb\database\query\IndexExists $query)
 	{
@@ -280,6 +272,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	 * Run a table info query.
 	 *
 	 * @param query\TableInfo $query
+	 * @return bool
+	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableInfo(\fluxbb\database\query\TableInfo $query)
 	{

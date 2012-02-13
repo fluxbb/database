@@ -586,6 +586,7 @@ abstract class Adapter
 	 * 
 	 * @param query\Replace $query
 	 * @param array $params
+	 * @return int
 	 * @throws \Exception
 	 */
 	public function runReplace(query\Replace $query, array $params = array())
@@ -611,7 +612,9 @@ abstract class Adapter
 	 * Compile and run a TRUNCATE query.
 	 * 
 	 * @param query\Truncate $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTruncate(query\Truncate $query)
 	{
@@ -619,21 +622,17 @@ abstract class Adapter
 		if (empty($table))
 			throw new \Exception('A TRUNCATE query must have a table specified.');
 
-		try {
-			$sql = 'TRUNCATE TABLE '.$table;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'TRUNCATE TABLE '.$table;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a CREATE TABLE query.
 	 * 
 	 * @param query\CreateTable $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runCreateTable(query\CreateTable $query)
 	{
@@ -648,42 +647,40 @@ abstract class Adapter
 		foreach ($query->fields as $field)
 			$fields[] = $this->compileColumnDefinition($field);
 
-		try {
-			$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
+		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 
-			if (!empty($query->primary))
-			{
-				$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
-			}
-
-			$sql .= ')';
-
-			$this->exec($sql);
-
-			if (!empty($query->indices))
-			{
-				foreach ($query->indices as $name => $index)
-				{
-					// Add indices manually
-					$q = $this->addIndex($table, $name);
-					$q->fields = $index['columns'];
-					$q->unique = $index['unique'];
-					$q->usePrefix = false;
-					$q->run();
-				}
-			}
-		} catch (\PDOException $e) {
-			return false;
+		if (!empty($query->primary))
+		{
+			$sql .= ', PRIMARY KEY ('.implode(', ', $query->primary).')';
 		}
 
-		return true;
+		$sql .= ')';
+
+		$result = $this->exec($sql);
+
+		if (!empty($query->indices))
+		{
+			foreach ($query->indices as $name => $index)
+			{
+				// Add indices manually
+				$q = $this->addIndex($table, $name);
+				$q->fields = $index['columns'];
+				$q->unique = $index['unique'];
+				$q->usePrefix = false;
+				$q->run();
+			}
+		}
+		
+		return $result;
 	}
 
 	/**
 	 * Compile and run a RENAME TABLE query.
 	 * 
 	 * @param query\RenameTable $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runRenameTable(query\RenameTable $query)
 	{
@@ -695,21 +692,17 @@ abstract class Adapter
 		if (empty($new_name))
 			throw new \Exception('A RENAME TABLE query must have a new table name specified.');
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP TABLE query.
 	 * 
 	 * @param query\DropTable $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropTable(query\DropTable $query)
 	{
@@ -717,21 +710,17 @@ abstract class Adapter
 		if (empty($table))
 			throw new \Exception('A DROP TABLE query must have a table specified.');
 
-		try {
-			$sql = 'DROP TABLE '.$table;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'DROP TABLE '.$table;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a TABLE EXISTS query.
 	 * 
 	 * @param query\TableExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runTableExists(query\TableExists $query)
 	{
@@ -747,7 +736,9 @@ abstract class Adapter
 	 * Compile and run an ADD FIELD query.
 	 * 
 	 * @param query\AddField $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAddField(query\AddField $query)
 	{
@@ -760,21 +751,17 @@ abstract class Adapter
 
 		$field = $this->compileColumnDefinition($query->field);
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' ADD COLUMN '.$field;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an ALTER FIELD query.
 	 * 
 	 * @param query\AlterField $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAlterField(query\AlterField $query)
 	{
@@ -787,21 +774,17 @@ abstract class Adapter
 
 		$field = $this->compileColumnDefinition($query->field);
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' MODIFY '.$query->field->name.' '.$field;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP FIELD query.
 	 * 
 	 * @param query\DropField $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropField(query\DropField $query)
 	{
@@ -812,21 +795,17 @@ abstract class Adapter
 		if (empty($query->field))
 			throw new \Exception('A DROP FIELD query must have a field specified.');
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a FIELD EXISTS query.
 	 * 
 	 * @param query\FieldExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runFieldExists(query\FieldExists $query)
 	{
@@ -845,7 +824,9 @@ abstract class Adapter
 	 * Compile and run an ADD INDEX query.
 	 * 
 	 * @param query\AddIndex $query
+	 * @result string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runAddIndex(query\AddIndex $query)
 	{
@@ -859,21 +840,17 @@ abstract class Adapter
 		if (empty($query->fields))
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run a DROP INDEX query.
 	 * 
 	 * @param query\DropIndex $query
+	 * @return string
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runDropIndex(query\DropIndex $query)
 	{
@@ -884,21 +861,17 @@ abstract class Adapter
 		if (empty($query->index))
 			throw new \Exception('A DROP INDEX query must have an index specified.');
 
-		try {
-			$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
-			$this->exec($sql);
-		} catch (\PDOException $e) {
-			return false;
-		}
-
-		return true;
+		$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
+		return $this->exec($sql);
 	}
 
 	/**
 	 * Compile and run an INDEX EXISTS query.
 	 * 
 	 * @param query\IndexExists $query
+	 * @return bool
 	 * @throws \Exception
+	 * @throws \PDOException
 	 */
 	public function runIndexExists(query\IndexExists $query)
 	{
@@ -917,6 +890,7 @@ abstract class Adapter
 	 * Run a table info query.
 	 * 
 	 * @param query\TableInfo $query
+	 * @return array
 	 */
 	abstract public function runTableInfo(query\TableInfo $query);
 
