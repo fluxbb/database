@@ -28,9 +28,9 @@
 namespace fluxbb\database\tests;
 
 require_once dirname(__FILE__).'/../../../src/Database/Adapter.php';
-require_once dirname(__FILE__).'/../AdapterTest.php';
+require_once dirname(__FILE__).'/../AdapterTestCase.php';
 
-class Adapter_SQLiteTest extends AdapterTest
+class Adapter_SQLiteTest extends AdapterTestCase
 {
 	public function createAdapter()
 	{

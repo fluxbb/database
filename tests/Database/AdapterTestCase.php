@@ -31,7 +31,7 @@ define('PHPDB_ROOT', realpath(dirname(__FILE__).'/../../src/').'/');
 require_once PHPDB_ROOT.'Database/Adapter.php';
 require_once 'PHPUnit/Framework/TestCase.php';
 
-abstract class AdapterTest extends \PHPUnit_Framework_TestCase
+abstract class AdapterTestCase extends \PHPUnit_Framework_TestCase
 {
 	/**
 	 * @var \fluxbb\database\Adapter
