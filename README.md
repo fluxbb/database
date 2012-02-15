@@ -9,13 +9,12 @@ The SQL syntax abstraction we perform has 2 goals:
 ## Documentation
 [On our website](http://fluxbb.org/docs/v2.0/modules/database)
 
-## Supported drivers
- * [Any supported by PDO](http://www.php.net/manual/en/pdo.drivers.php)
-
-## Supported dialects
+## Supported drivers / dialects
  * MySQL
  * SQLite 3
  * PostgreSQL, from 8.4
+
+Theoretically, it is easy (and planned for the future) to add new adapters (if [ supported by PDO](http://www.php.net/manual/en/pdo.drivers.php)), although some SQL abstraction might have to be rewritten.
 
 ## License
 [LGPL - GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl.html)
