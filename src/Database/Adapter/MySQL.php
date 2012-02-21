@@ -46,7 +46,8 @@ class MySQL extends \fluxbb\database\Adapter
 
 		$this->engine = isset($options['engine']) ? $options['engine'] : self::DEFAULT_ENGINE;
 
-		if (!isset($this->options['driver_options'])) {
+		if (!isset($this->options['driver_options']))
+		{
 			$this->options['driver_options'] = array();
 		}
 		$this->options['driver_options'][\PDO::MYSQL_ATTR_FOUND_ROWS] = true;
@@ -56,22 +57,28 @@ class MySQL extends \fluxbb\database\Adapter
 	{
 		$args = array();
 
-		if (isset($this->options['host'])) {
+		if (isset($this->options['host']))
+		{
 			$args[] = 'host='.$this->options['host'];
 		}
 
-		if (isset($this->options['port'])) {
+		if (isset($this->options['port']))
+		{
 			$args[] = 'port='.$this->options['port'];
 		}
 
-		if (isset($this->options['unix_socket'])) {
+		if (isset($this->options['unix_socket']))
+		{
 			// Replace current arguments with unix socket, as they cannot be used together
 			$args = array('unix_socket='.$this->options['unix_socket']);
 		}
 
-		if (isset($this->options['dbname'])) {
+		if (isset($this->options['dbname']))
+		{
 			$args[] = 'dbname='.$this->options['dbname'];
-		} else {
+		}
+		else
+		{
 			throw new \Exception('No database name specified for MySQL database.');
 		}
 
@@ -90,14 +97,20 @@ class MySQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A CREATE TABLE query must have a table specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('A CREATE TABLE query must contain at least one field.');
+		}
 
 		$fields = array();
 		foreach ($query->fields as $field)
+		{
 			$fields[] = $this->compileColumnDefinition($field);
+		}
 
 		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 
@@ -117,12 +130,18 @@ class MySQL extends \fluxbb\database\Adapter
 		$sql .= ')';
 
 		if (!empty($query->engine))
+		{
 			$sql .= ' ENGINE = '.$this->quote($query->engine);
+		}
 		else if (!empty($this->engine))
+		{
 			$sql .= ' ENGINE = '.$this->quote($this->engine);
+		}
 
 		if (!empty($this->charset))
+		{
 			$sql .= ' CHARSET = '.$this->quote($this->charset);
+		}
 
 		$this->exec($sql);
 	}
@@ -139,13 +158,19 @@ class MySQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ADD INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An ADD INDEX query must have an index specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
+		}
 
 		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', $query->fields).')';
 		$this->exec($sql);
@@ -163,7 +188,9 @@ class MySQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE INFO query must have a table specified.');
+		}
 
 		$table_info = array(
 				'columns'		=> array(),
@@ -181,7 +208,8 @@ class MySQL extends \fluxbb\database\Adapter
 					'allow_null'	=> $row['Null'] == 'YES',
 			);
 
-			if ($row['Default'] !== NULL || $row['Null'] == 'YES') {
+			if ($row['Default'] !== NULL || $row['Null'] == 'YES')
+			{
 				$table_info['columns'][$row['Field']]['default'] = $row['Default'];
 			}
 		}
@@ -198,7 +226,8 @@ class MySQL extends \fluxbb\database\Adapter
 			}
 
 			// Remove table name prefix
-			if (substr($row['Key_name'], 0, strlen($table.'_')) == $table.'_') {
+			if (substr($row['Key_name'], 0, strlen($table.'_')) == $table.'_')
+			{
 				$row['Key_name'] = substr($row['Key_name'], strlen($table.'_'));
 			}
 
@@ -228,7 +257,8 @@ class MySQL extends \fluxbb\database\Adapter
 	protected function understandColumnType($str)
 	{
 		// TODO: Complete implementation
-		if (preg_match('%int\(.+%', $str)) {
+		if (preg_match('%int\(.+%', $str))
+		{
 			return 'INTEGER';
 		}
 

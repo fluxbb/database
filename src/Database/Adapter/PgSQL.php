@@ -40,17 +40,22 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$args = array();
 
-		if (isset($this->options['host'])) {
+		if (isset($this->options['host']))
+		{
 			$args[] = 'host='.$this->options['host'];
 		}
 
-		if (isset($this->options['port'])) {
+		if (isset($this->options['port']))
+		{
 			$args[] = 'port='.$this->options['port'];
 		}
 
-		if (isset($this->options['dbname'])) {
+		if (isset($this->options['dbname']))
+		{
 			$args[] = 'dbname='.$this->options['dbname'];
-		} else {
+		}
+		else
+		{
 			throw new \Exception('No database name specified for PostgreSQL database.');
 		}
 
@@ -70,13 +75,19 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A REPLACE query must have a table specified.');
+		}
 
 		if (empty($query->values))
+		{
 			throw new \Exception('A REPLACE query must contain at least one value.');
+		}
 
 		if (empty($query->keys))
+		{
 			throw new \Exception('A REPLACE query must contain at least one key.');
+		}
 
 		$values = array();
 		foreach ($query->values as $key => $value)
@@ -121,7 +132,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TRUNCATE query must have a table specified.');
+		}
 
 		$sql = 'TRUNCATE TABLE '.$table.' RESTART IDENTITY';
 		$this->exec($sql);
@@ -139,7 +152,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE EXISTS query must have a table specified.');
+		}
 
 		$sql = 'SELECT 1 FROM pg_class WHERE relname = '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -157,10 +172,14 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ALTER FIELD query must have a table specified.');
+		}
 
 		if ($query->field == NULL)
+		{
 			throw new \Exception('An ALTER FIELD query must have field information specified.');
+		}
 
 		$now = time();
 
@@ -193,10 +212,14 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->field))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a field specified.');
+		}
 
 		$sql = 'SELECT 1 FROM pg_class c INNER JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relname = '.$this->quote($table).' AND a.attname = '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -214,13 +237,19 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ADD INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An ADD INDEX query must have an index specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
+		}
 
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.' ('.implode(',', $query->fields).')';
 		$this->exec($sql);
@@ -238,10 +267,14 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('A DROP INDEX query must have an index specified.');
+		}
 
 		$sql = 'DROP INDEX '.$table.'_'.$query->index;
 		$this->exec($sql);
@@ -259,10 +292,14 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An INDEX EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An INDEX EXISTS query must have an index specified.');
+		}
 
 		$sql = 'SELECT 1 FROM pg_index i INNER JOIN pg_class c1 ON c1.oid = i.indrelid INNER JOIN pg_class c2 ON c2.oid = i.indexrelid WHERE c1.relname = '.$this->quote($table).' AND c2.relname = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -280,7 +317,9 @@ class PgSQL extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE INFO query must have a table specified.');
+		}
 
 		$table_info = array(
 			'columns'		=> array(),
@@ -300,11 +339,14 @@ class PgSQL extends \fluxbb\database\Adapter
 				'allow_null'	=> $row['is_nullable'] == 'YES',
 			);
 
-			if (substr($row['column_default'], 0, 8) != 'nextval(') {
-				if ($row['column_default'] !== NULL || $row['is_nullable'] == 'YES') {
+			if (substr($row['column_default'], 0, 8) != 'nextval(')
+			{
+				if ($row['column_default'] !== NULL || $row['is_nullable'] == 'YES')
+				{
 					// Remove weird PgSQL default value formatting
 					$row['column_default'] = preg_replace('%\'(.*)\'::character varying%', '$1', $row['column_default']);
-					if ($row['column_default'] == 'NULL::character varying') {
+					if ($row['column_default'] == 'NULL::character varying')
+					{
 						$row['column_default'] = NULL;
 					}
 
@@ -322,16 +364,20 @@ class PgSQL extends \fluxbb\database\Adapter
 			// Remove table name prefix
 			$row['index_name'] = substr($row['index_name'], strlen($table.'_'));
 
-			if ($row['index_name'] != 'pkey') {
+			if ($row['index_name'] != 'pkey')
+			{
 				$table_info['indices'][$row['index_name']] = array(
 					'fields'	=> explode(',', $row['index_columns']),
 					'unique'	=> $row['indisunique'] == 't',
 				);
 
-				if ($row['indisunique'] == 't') {
+				if ($row['indisunique'] == 't')
+				{
 					$table_info['unique'][] = explode(',', $row['index_columns']);
 				}
-			} else {
+			}
+			else
+			{
 				$table_info['primary_key'] = explode(',', $row['index_columns']);
 			}
 		}
@@ -348,17 +394,25 @@ class PgSQL extends \fluxbb\database\Adapter
 	protected function compileColumnDefinition(\fluxbb\database\query\Helper_TableColumn $column)
 	{
 		if ($column->type === \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL)
+		{
 			return $this->compileColumnSerial($column->name);
+		}
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
 
 		if (!$column->allow_null)
+		{
 			$sql .= ' NOT NULL';
+		}
 
 		if ($column->default !== NULL)
+		{
 			$sql .= ' DEFAULT '.$this->quote($column->default);
+		}
 		else if ($column->allow_null)
+		{
 			$sql .= ' DEFAULT NULL';
+		}
 
 		return $sql;
 	}
@@ -371,20 +425,27 @@ class PgSQL extends \fluxbb\database\Adapter
 	 */
 	protected function compileColumnType($type)
 	{
-		if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_INT_UNSIGNED) {
+		if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_INT_UNSIGNED)
+		{
 			return 'INTEGER';
-		} else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_MEDIUMINT_UNSIGNED) {
+		}
+		else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_MEDIUMINT_UNSIGNED)
+		{
 			return 'MEDIUMINT';
-		} else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_TINYINT_UNSIGNED) {
+		}
+		else if ($type == \fluxbb\database\query\Helper_TableColumn::TYPE_TINYINT_UNSIGNED)
+		{
 			return 'TINYINT';
 		}
+		
 		return $type;
 	}
 
 	protected function understandColumnType($str)
 	{
 		// TODO: Complete implementation
-		if ($str == 'integer') {
+		if ($str == 'integer')
+		{
 			return 'INTEGER';
 		}
 
@@ -428,10 +489,14 @@ class PgSQL extends \fluxbb\database\Adapter
 		$sql = '';
 
 		if ($limit > 0)
+		{
 			$sql .= ' LIMIT '.intval($limit);
+		}
 
 		if ($offset > 0)
+		{
 			$sql .= ' OFFSET '.intval($offset);
+		}
 
 		return $sql;
 	}

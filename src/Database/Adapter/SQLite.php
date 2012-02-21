@@ -38,7 +38,8 @@ class SQLite extends \fluxbb\database\Adapter
 {
 	public function generateDsn()
 	{
-		if (!isset($this->options['dbname'])) {
+		if (!isset($this->options['dbname']))
+		{
 			throw new \Exception('No database name specified for SQLite database.');
 		}
 
@@ -49,7 +50,9 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$sql = 'PRAGMA encoding = '.$this->quote($charset);
 		if ($this->exec($sql) === false)
+		{
 			return;
+		}
 
 		$this->charset = $charset;
 	}
@@ -66,7 +69,9 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TRUNCATE query must have a table specified.');
+		}
 
 		// Reset sequence counter
 		$sql = 'DELETE FROM sqlite_sequence WHERE name = '.$this->quote($table).';';
@@ -87,17 +92,23 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A CREATE TABLE query must have a table specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('A CREATE TABLE query must contain at least one field.');
+		}
 
 		$fields = array();
 		$has_serial = false;
-		foreach ($query->fields as $field) {
+		foreach ($query->fields as $field)
+		{
 			// Workaround: AUTOINCREMENT columns have to be declared PRIMARY KEY in SQLite.
 			// Thus we cannot declare the PRIMARY KEY later on.
-			if ($field->type == \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL) {
+			if ($field->type == \fluxbb\database\query\Helper_TableColumn::TYPE_SERIAL)
+			{
 				$has_serial = true;
 			}
 			$fields[] = $this->compileColumnDefinition($field);
@@ -142,7 +153,9 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE EXISTS query must have a table specified.');
+		}
 
 		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($table).' AND type=\'table\'';
 		return (bool) $this->query($sql)->fetchColumn();
@@ -172,10 +185,14 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP FIELD query must have a table specified.');
+		}
 
 		if (empty($query->field))
+		{
 			throw new \Exception('A DROP FIELD query must have a field specified.');
+		}
 
 		$now = time();
 		$q = $this->tableInfo($table);
@@ -196,14 +213,18 @@ class SQLite extends \fluxbb\database\Adapter
 			$new_sql .= "\n".$cur_column.' '.$column['type'].(!empty($column['default']) ? ' DEFAULT '.$column['default'] : '').($column['allow_null'] ? '' : ' NOT NULL').',';
 		}
 
-		if (isset($table_info['unique'])) {
-			foreach ($table_info['unique'] as $unique) {
+		if (isset($table_info['unique']))
+		{
+			foreach ($table_info['unique'] as $unique)
+			{
 				$new_sql .= "\n".'UNIQUE ('.implode(', ', $unique).'),';
 			}
 		}
 
 		if (!empty($table_info['primary_key']))
+		{
 			$new_sql .= "\n".'PRIMARY KEY ('.implode(', ', $table_info['primary_key']).'),';
+		}
 
 		$new_sql = trim($new_sql, ',')."\n".');';
 
@@ -245,10 +266,14 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->field))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a field specified.');
+		}
 
 		$result = $this->query('PRAGMA table_info('.$table.')');
 		foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row)
@@ -273,13 +298,19 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ADD INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An ADD INDEX query must have an index specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
+		}
 
 		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
 		$this->exec($sql);
@@ -297,10 +328,14 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('A DROP INDEX query must have an index specified.');
+		}
 
 		$sql = 'DROP INDEX '.$table.'_'.$query->index;
 		$this->exec($sql);
@@ -318,10 +353,14 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An INDEX EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An INDEX EXISTS query must have an index specified.');
+		}
 
 		$sql = 'SELECT 1 FROM sqlite_master WHERE name = '.$this->quote($table.'_'.$query->index).' AND tbl_name = '.$this->quote($table).' AND type=\'index\'';
 		return (bool) $this->query($sql)->fetchColumn();
@@ -339,7 +378,9 @@ class SQLite extends \fluxbb\database\Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE INFO query must have a table specified.');
+		}
 
 		$table_info = array(
 			'columns'		=> array(),
@@ -357,10 +398,14 @@ class SQLite extends \fluxbb\database\Adapter
 				'allow_null'	=> $row['notnull'] == 0,
 			);
 
-			if ($row['dflt_value'] !== NULL) {
-				if (substr($row['dflt_value'], 0, 1) == '\'' && substr($row['dflt_value'], -1) == '\'') {
+			if ($row['dflt_value'] !== NULL)
+			{
+				if (substr($row['dflt_value'], 0, 1) == '\'' && substr($row['dflt_value'], -1) == '\'')
+				{
 					$row['dflt_value'] = substr($row['dflt_value'], 1, -1);
-				} else if ($row['dflt_value'] == 'NULL') {
+				}
+				else if ($row['dflt_value'] == 'NULL')
+				{
 					$row['dflt_value'] = NULL;
 				}
 
@@ -383,7 +428,8 @@ class SQLite extends \fluxbb\database\Adapter
 			}
 
 			// Remove table name prefix
-			if (substr($cur_index['name'], 0, strlen($table.'_')) == $table.'_') {
+			if (substr($cur_index['name'], 0, strlen($table.'_')) == $table.'_')
+			{
 				$index_name = substr($cur_index['name'], strlen($table.'_'));
 			}
 
@@ -436,13 +482,19 @@ class SQLite extends \fluxbb\database\Adapter
 		$sql = '';
 
 		if ($offset > 0 && $limit == 0)
+		{
 			$limit = -1;
+		}
 
 		if ($limit > 0)
+		{
 			$sql .= ' LIMIT '.intval($limit);
+		}
 
 		if ($offset > 0)
+		{
 			$sql .= ' OFFSET '.intval($offset);
+		}
 
 		return $sql;
 	}

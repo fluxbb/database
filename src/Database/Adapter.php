@@ -152,10 +152,13 @@ abstract class Adapter
 		$charset = isset($this->options['charset']) ? $this->options['charset'] : self::DEFAULT_CHARSET;
 
 		// Avoid displaying connection details by re-throwing the exception here
-		try {
+		try
+		{
 			$this->pdo = new \PDO($dsn, $username, $password, $driver_options);
 			$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		} catch (\PDOException $e) {
+		}
+		catch (\PDOException $e)
+		{
 			throw new \Exception('Unable to connect to database.');
 		}
 
@@ -179,7 +182,9 @@ abstract class Adapter
 	{
 		$sql = 'SET NAMES '.$this->quote($charset);
 		if ($this->exec($sql) === false)
+		{
 			return;
+		}
 
 		$this->charset = $charset;
 	}
@@ -208,14 +213,21 @@ abstract class Adapter
 	 */
 	public function quote($str)
 	{
-		if (is_null($str)) {
+		if (is_null($str))
+		{
 			return 'NULL';
-		} else if (is_int($str)) {
+		}
+		else if (is_int($str))
+		{
 			return $str;
 		}
+		
 		$quoted_str = $this->getPDO()->quote($str);
+		
 		if ($quoted_str === false)
+		{
 			$quoted_str = '\''.addslashes($str).'\'';
+		}
 
 		return $quoted_str;
 	}
@@ -308,7 +320,9 @@ abstract class Adapter
 		foreach ($params as $key => $values)
 		{
 			if (!is_array($values))
+			{
 				continue;
+			}
 
 			// We found a param array, lets handle it
 			$temp = array();
@@ -461,8 +475,17 @@ abstract class Adapter
 	{
 		$client = $server = '?';
 
-		try { $client = $this->getPDO()->getAttribute(\PDO::ATTR_CLIENT_VERSION); } catch (\PDOException $e) {}
-		try { $server = $this->getPDO()->getAttribute(\PDO::ATTR_SERVER_VERSION); } catch (\PDOException $e) {}
+		try
+		{
+			$client = $this->getPDO()->getAttribute(\PDO::ATTR_CLIENT_VERSION);
+		}
+		catch (\PDOException $e) {}
+		
+		try
+		{
+			$server = $this->getPDO()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+		}
+		catch (\PDOException $e) {}
 
 		return sprintf('%s %s/%s',
 			$this->type,
@@ -485,31 +508,47 @@ abstract class Adapter
 	public function compileSelect(query\Select $query)
 	{
 		if (empty($query->fields))
+		{
 			throw new \Exception('A SELECT query must select at least one field.');
+		}
 
 		$sql = 'SELECT '.($query->distinct ? 'DISTINCT ' : '').implode(', ', $query->fields);
 
 		$table = $query->getTable();
 		if (!empty($table))
+		{
 			$sql .= ' FROM '.$table;
+		}
 
 		if (!empty($query->joins))
+		{
 			$sql .= $this->compileJoin($query->joins);
+		}
 
 		if (!empty($query->where))
+		{
 			$sql .= $this->compileWhere($query->where);
+		}
 
 		if (!empty($query->group))
+		{
 			$sql .= $this->compileGroup($query->group);
+		}
 
 		if (!empty($query->having))
+		{
 			$sql .= $this->compileHaving($query->having);
+		}
 
 		if (!empty($query->order))
+		{
 			$sql .= $this->compileOrder($query->order);
+		}
 
 		if ($query->limit > 0 || $query->offset > 0)
+		{
 			$sql .= $this->compileLimitOffset($query->limit, $query->offset);
+		}
 
 		return $sql;
 	}
@@ -524,10 +563,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An INSERT query must have a table specified.');
+		}
 
 		if (empty($query->values))
+		{
 			throw new \Exception('An INSERT query must contain at least one value.');
+		}
 
 		$sql = 'INSERT INTO '.$table.' ('.implode(', ', array_keys($query->values)).') VALUES ('.implode(', ', array_values($query->values)).')';
 
@@ -544,19 +587,27 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An UPDATE query must have a table specified.');
+		}
 
 		if (empty($query->values))
+		{
 			throw new \Exception('An UPDATE query must contain at least one value.');
+		}
 
 		$updates = array();
 		foreach ($query->values as $key => $value)
+		{
 			$updates[] = $key.' = '.$value;
+		}
 
 		$sql = 'UPDATE '.$table.' SET '.implode(', ', $updates);
 
 		if (!empty($query->where))
+		{
 			$sql .= $this->compileWhere($query->where);
+		}
 
 		return $sql;
 	}
@@ -571,12 +622,16 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DELETE query must have a table specified.');
+		}
 
 		$sql = 'DELETE FROM '.$table;
 
 		if (!empty($query->where))
+		{
 			$sql .= $this->compileWhere($query->where);
+		}
 
 		return $sql;
 	}
@@ -593,13 +648,19 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A REPLACE query must have a table specified.');
+		}
 
 		if (empty($query->values))
+		{
 			throw new \Exception('A REPLACE query must contain at least one value.');
+		}
 
 		if (empty($query->keys))
+		{
 			throw new \Exception('A REPLACE query must contain at least one key.');
+		}
 
 		$values = array_merge($query->keys, $query->values);
 
@@ -620,7 +681,9 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TRUNCATE query must have a table specified.');
+		}
 
 		$sql = 'TRUNCATE TABLE '.$table;
 		$this->exec($sql);
@@ -638,14 +701,20 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A CREATE TABLE query must have a table specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('A CREATE TABLE query must contain at least one field.');
+		}
 
 		$fields = array();
 		foreach ($query->fields as $field)
+		{
 			$fields[] = $this->compileColumnDefinition($field);
+		}
 
 		$sql = 'CREATE TABLE '.$table.' ('.implode(', ', $fields);
 
@@ -684,11 +753,15 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A RENAME TABLE query must have a table specified.');
+		}
 
 		$new_name = $query->getNewName();
 		if (empty($new_name))
+		{
 			throw new \Exception('A RENAME TABLE query must have a new table name specified.');
+		}
 
 		$sql = 'ALTER TABLE '.$table.' RENAME TO '.$new_name;
 		$this->exec($sql);
@@ -706,7 +779,9 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP TABLE query must have a table specified.');
+		}
 
 		$sql = 'DROP TABLE '.$table;
 		$this->exec($sql);
@@ -724,7 +799,9 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A TABLE EXISTS query must have a table specified.');
+		}
 
 		$sql = 'SHOW TABLES LIKE '.$this->quote($table);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -742,10 +819,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ADD FIELD query must have a table specified.');
+		}
 
 		if ($query->field == NULL)
+		{
 			throw new \Exception('An ADD FIELD query must have field information specified.');
+		}
 
 		$field = $this->compileColumnDefinition($query->field);
 
@@ -765,10 +846,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ALTER FIELD query must have a table specified.');
+		}
 
 		if ($query->field == NULL)
+		{
 			throw new \Exception('An ALTER FIELD query must have field information specified.');
+		}
 
 		$field = $this->compileColumnDefinition($query->field);
 
@@ -788,10 +873,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP FIELD query must have a table specified.');
+		}
 
 		if (empty($query->field))
+		{
 			throw new \Exception('A DROP FIELD query must have a field specified.');
+		}
 
 		$sql = 'ALTER TABLE '.$table.' DROP '.$query->field;
 		$this->exec($sql);
@@ -809,10 +898,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->field))
+		{
 			throw new \Exception('A FIELD EXISTS query must have a field specified.');
+		}
 
 		$sql = 'SHOW COLUMNS FROM '.$table.' LIKE '.$this->quote($query->field);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -830,13 +923,19 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An ADD INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An ADD INDEX query must have an index specified.');
+		}
 
 		if (empty($query->fields))
+		{
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
+		}
 
 		$sql = 'ALTER TABLE '.$table.' ADD '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ('.implode(',', array_keys($query->fields)).')';
 		$this->exec($sql);
@@ -854,10 +953,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('A DROP INDEX query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('A DROP INDEX query must have an index specified.');
+		}
 
 		$sql = 'ALTER TABLE '.$table.' DROP INDEX '.$table.'_'.$query->index;
 		$this->exec($sql);
@@ -875,10 +978,14 @@ abstract class Adapter
 	{
 		$table = $query->getTable();
 		if (empty($table))
+		{
 			throw new \Exception('An INDEX EXISTS query must have a table specified.');
+		}
 
 		if (empty($query->index))
+		{
 			throw new \Exception('An INDEX EXISTS query must have an index specified.');
+		}
 
 		$sql = 'SHOW INDEX FROM '.$table.' WHERE Key_name = '.$this->quote($table.'_'.$query->index);
 		return (bool) $this->query($sql)->fetchColumn();
@@ -901,20 +1008,30 @@ abstract class Adapter
 	protected function compileColumnDefinition(query\Helper_TableColumn $column)
 	{
 		if ($column->type === query\Helper_TableColumn::TYPE_SERIAL)
+		{
 			return $this->compileColumnSerial($column->name);
+		}
 
 		$sql = $column->name.' '.$this->compileColumnType($column->type);
 
 		if (!$column->allow_null)
+		{
 			$sql .= ' NOT NULL';
+		}
 
 		if ($column->default !== NULL)
+		{
 			$sql .= ' DEFAULT '.$this->quote($column->default);
+		}
 		else if ($column->allow_null)
+		{
 			$sql .= ' DEFAULT NULL';
+		}
 
 		if (!empty($column->collation))
+		{
 			$sql .= ' COLLATE '.$this->quote($this->charset.'_'.$column->collation);
+		}
 
 		return $sql;
 	}
@@ -955,7 +1072,9 @@ abstract class Adapter
 		{
 			$sql .= ' '.$join->type.' '.$join->getTable();
 			if (!empty($join->on))
+			{
 				$sql .= ' ON '.$this->compileConditions($join->on);
+			}
 		}
 
 		return $sql;
@@ -1028,13 +1147,19 @@ abstract class Adapter
 		$sql = '';
 
 		if ($offset > 0 && $limit == 0)
+		{
 			$limit = PHP_INT_MAX;
+		}
 
 		if ($limit > 0)
+		{
 			$sql .= ' LIMIT '.intval($limit);
+		}
 
 		if ($offset > 0)
+		{
 			$sql .= ' OFFSET '.intval($offset);
+		}
 
 		return $sql;
 	}
