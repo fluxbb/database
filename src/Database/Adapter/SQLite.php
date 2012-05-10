@@ -312,7 +312,13 @@ class SQLite extends \fluxbb\database\Adapter
 			throw new \Exception('An ADD INDEX query must have at least one field specified.');
 		}
 
-		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $query->fields).')';
+		$fields = array();
+		foreach ($query->fields as $key => $column)
+		{
+			$fields[] = is_string($key) ? $key : $column;
+		}
+
+		$sql = 'CREATE '.($query->unique ? 'UNIQUE ' : '').'INDEX '.$table.'_'.$query->index.' ON '.$table.'('.implode(',', $fields).')';
 		$this->exec($sql);
 	}
 
