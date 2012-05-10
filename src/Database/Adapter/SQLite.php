@@ -34,6 +34,8 @@
 
 namespace fluxbb\database\adapter;
 
+use \fluxbb\database\query\Helper_TableColumn;
+
 class SQLite extends \fluxbb\database\Adapter
 {
 	public function generateDsn()
@@ -463,6 +465,38 @@ class SQLite extends \fluxbb\database\Adapter
 		}
 
 		return $table_info;
+	}
+
+	/**
+	 * Compile a table column definition.
+	 * 
+	 * @param \fluxbb\database\query\Helper_TableColumn $column
+	 * @return string
+	 */
+	protected function compileColumnDefinition(Helper_TableColumn $column)
+	{
+		if ($column->type === Helper_TableColumn::TYPE_SERIAL)
+		{
+			return $this->compileColumnSerial($column->name);
+		}
+
+		$sql = $column->name.' '.$this->compileColumnType($column->type);
+
+		if (!$column->allow_null)
+		{
+			$sql .= ' NOT NULL';
+		}
+
+		if ($column->default !== NULL)
+		{
+			$sql .= ' DEFAULT '.$this->quote($column->default);
+		}
+		else if ($column->allow_null)
+		{
+			$sql .= ' DEFAULT NULL';
+		}
+
+		return $sql;
 	}
 
 	/**
