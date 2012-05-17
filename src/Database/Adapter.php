@@ -92,7 +92,7 @@ abstract class Adapter
 		$pdo_drivers = \PDO::getAvailableDrivers();
 		foreach (glob(dirname(__FILE__).'/Adapter/*.php') as $file)
 		{
-			$name = substr(end(explode('/', $file)), 0, -4);
+			$name = substr(basename($file), 0, -4);
 
 			if (in_array(strtolower($name), $pdo_drivers))
 			{
