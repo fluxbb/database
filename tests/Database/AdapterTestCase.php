@@ -123,13 +123,13 @@ abstract class AdapterTestCase extends \PHPUnit_Framework_TestCase
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r3 = $q3->run($params);
 
-		$this->assertEquals(1, $r3);
+		$this->assertEquals(2, $r3);
 
 		$q4 = $this->db->replace(array('name' => ':name'), 'test2', array('username' => ':username'));
 		$params = array(':username' => 'lie2815', ':name' => 'Franz Liedke');
 		$r4 = $q4->run($params);
 
-		$this->assertEquals(1, $r4);
+		$this->assertEquals(2, $r4);
 
 		$q5 = $this->db->select(array('username', 'name'), 'test2');
 		$q5->order = array('username ASC');
