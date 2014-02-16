@@ -58,7 +58,7 @@ abstract class AdapterTestCase extends \PHPUnit_Framework_TestCase
 		$q2 = $this->db->insert(array('username' => ':username', 'name' => ':name'), 'test1');
 		$params = array(':username' => 'lie2815', ':name' => 'Franz');
 		$r2_1 = $q2->run($params);
-		$params = array(':username' => 'Reines', ':name' => 'Jamie');
+		$params = array(':username' => 'reines', ':name' => 'Jamie');
 		$r2_2 = $q2->run($params);
 
 		$this->assertEquals(1, $r2_1);
@@ -84,7 +84,7 @@ abstract class AdapterTestCase extends \PHPUnit_Framework_TestCase
 				'name'		=> 'Franz Liedke',
 			),
 			array(
-				'username'	=> 'Reines',
+				'username'	=> 'reines',
 				'name'		=> 'Jamie',
 			),
 		);
@@ -95,7 +95,7 @@ abstract class AdapterTestCase extends \PHPUnit_Framework_TestCase
 		$q5->where = 'username = :username';
 		$params = array(':username' => 'lie2815');
 		$r5_1 = $q5->run($params);
-		$params = array(':username' => 'Reines');
+		$params = array(':username' => 'reines');
 		$r5_2 = $q5->run($params);
 
 		$this->assertEquals(1, $r5_1);
