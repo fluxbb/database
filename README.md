@@ -1,4 +1,4 @@
-# fluxbb-database ![Build status](https://secure.travis-ci.org/fluxbb/database.png?branch=master)
+# fluxbb-database [![Build status](https://secure.travis-ci.org/fluxbb/database.png?branch=master)](https://travis-ci.org/fluxbb/database)
 A lightweight wrapper around [PHP::PDO](http://www.php.net/manual/en/book.pdo.php), providing both SQL abstraction and an extensible query interface.
 
 The SQL syntax abstraction we perform has 2 goals:
